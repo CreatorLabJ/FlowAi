@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow AI Studio</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='50%25' y1='10%25' x2='50%25' y2='90%25'%3E%3Cstop offset='0%25' stop-color='%23f8fafc'/%3E%3Cstop offset='45%25' stop-color='%237dd3fc'/%3E%3Cstop offset='100%25' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M50 8 C52 38, 62 48, 92 50 C62 52, 52 62, 50 92 C48 62, 38 52, 8 50 C38 48, 48 38, 50 8 Z' fill='url(%23g)'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        flow: {
+                            bg: '#0e0f11',
+                            sidebar: '#16171a',
+                            card: '#1e2024',
+                            hover: '#27292e',
+                            border: '#2d3036',
+                            text: '#e2e4e9',
+                            muted: '#9498a1'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0e0f11;
+            color: #e2e4e9;
+            font-family: 'Inter', sans-serif;
+        }
+        .flow-gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f472b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d3036;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3f434c;
+        }
+        /* Versteckt die Scrollbar beim vertikalen Alters-Ruler */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .age-tick-active {
+            background: linear-gradient(90deg, #60a5fa 0%, #c084fc 50%, #f472b6 100%) !important;
+            box-shadow: 0 0 12px rgba(192, 132, 252, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-flow-bg text-flow-text h-screen flex overflow-hidden select-none sm:select-auto">
+
+    <!-- ONBOARDING MODAL (Wird beim allerersten Start gezeigt) -->
+    <div id="onboardingModal" class="fixed inset-0 bg-flow-bg z-50 flex items-center justify-center p-4">
+        <div class="bg-flow-sidebar border border-flow-border rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-black border border-flow-border/80 flex items-center justify-center shadow-lg shadow-blue-500/20 overflow-hidden">
+                    <svg viewBox="0 0 100 100" class="w-12 h-12" aria-label="Flow AI Studio Icon">
+                        <defs>
+                            <radialGradient id="flowStarGradOnboard" cx="45%" cy="35%" r="60%">
+                                <stop offset="0%" stop-color="#f8fafc"/>
+                                <stop offset="45%" stop-color="#7dd3fc"/>
+                                <stop offset="80%" stop-color="#38bdf8"/>
+                                <stop offset="100%" stop-color="#1d4ed8"/>
+                            </radialGradient>
+                        </defs>
+                        <path d="M50 6 C52 38, 62 48, 94 50 C62 52, 52 62, 50 94 C48 62, 38 52, 6 50 C38 48, 48 38, 50 6 Z" fill="url(#flowStarGradOnboard)"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white">Willkommen bei <span class="flow-gradient-text">Flow AI Studio</span></h2>
+                <p id="onboardingStepDesc" class="text-xs text-flow-muted">Schritt 1 von 3: Bitte gib deinen Namen ein.</p>
+            </div>
+
+            <!-- SCHRITT 1: NAME -->
+            <div id="onboardingStep1" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-flow-muted mb-1.5 font-medium">Dein Name</label>
+                    <input type="text" id="onboardingNameInput" placeholder="z. B. Alex" class="w-full bg-flow-card border border-flow-border focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-white placeholder-flow-muted focus:outline-none transition">
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="onboardingNextStep(2)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-xl transition flex items-center space-x-2">
+                        <span>Weiter</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCHRITT 2: LAYOUT-AUSWAHL -->
+            <div id="onboardingStep2" class="space-y-4 hidden">
+                <label class="block text-xs text-flow-muted mb-1.5 font-medium">Wähle dein bevorzugtes Layout</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="selectOnboardingLayout('mobile')" id="layoutCardMobile" class="p-4 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-2xl text-center space-y-2 transition group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                        <div class="text-xs font-medium text-white">Mobilgerät</div>
+                        <div class="text-[10px] text-flow-muted">Kompakte Ansicht</div>
+                    </button>
+                    <button type="button" onclick="selectOnboardingLayout('desktop')" id="layoutCardDesktop" class="p-4 bg-flow-card hover:bg-flow-hover border border-blue-500 ring-1 ring-blue-500 rounded-2xl text-center space-y-2 transition group">
+                        <div class="w-10 h-10 mx-auto rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <div class="text-xs font-medium text-white">Desktop</div>
+                        <div class="text-[10px] text-flow-muted">Breite Arbeitsfläche</div>
+                    </button>
+                </div>
+                <div class="flex justify-between pt-2">
+                    <button type="button" onclick="onboardingNextStep(1)" class="px-4 py-2.5 bg-flow-card hover:bg-flow-hover text-white text-xs rounded-xl transition">Zurück</button>
+                    <button type="button" onclick="onboardingNextStep(3)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-xl transition flex items-center space-x-2">
+                        <span>Weiter</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCHRITT 3: ALTER & STANDARD-MODUS -->
+            <div id="onboardingStep3" class="space-y-4 hidden">
+                <div class="space-y-3">
+                    <div id="ageSectionWrapper" class="transition-all duration-300 opacity-40 grayscale pointer-events-none select-none">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-xs text-flow-muted font-medium">Dein Alter bestätigen (Scrolle die Skala)</label>
+                            <div class="text-sm font-bold flow-gradient-text"><span id="ageRulerDisplay">25</span> Jahre</div>
+                        </div>
+                        <input type="hidden" id="onboardingAgeSelect" value="25">
+                        <!-- Cleane vertikale Strich-Skala zum Hoch- und Runterscrollen -->
+                        <div class="relative bg-[#131417] border border-flow-border rounded-2xl h-36 overflow-hidden select-none">
+                            <!-- Mittige Auswahl-Linie & sanfte Verläufe oben/unten -->
+                            <div class="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#131417] to-transparent z-10"></div>
+                            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#131417] to-transparent z-10"></div>
+                            <div class="pointer-events-none absolute inset-x-3 top-1/2 -translate-y-1/2 h-7 rounded-xl border border-purple-500/30 bg-purple-500/5 z-0"></div>
+
+                            <div id="ageRulerScroll" onscroll="updateAgeRuler()" class="h-full overflow-y-auto no-scrollbar snap-y snap-mandatory py-[60px]">
+                                <div id="ageRulerTrack" class="flex flex-col items-center">
+                                    <!-- Wird dynamisch per JS mit 1–100 Jahren befüllt -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-flow-card px-4 py-3 rounded-xl border border-flow-border">
+                        <div class="space-y-0.5">
+                            <div class="text-xs font-medium text-white">Standard-Modus aktivieren</div>
+                            <div class="text-[10px] text-flow-muted">Lässt das andere grau und Flow redet normal</div>
+                        </div>
+                        <button type="button" id="onboardingModeBtn" onclick="toggleOnboardingMode()" class="w-10 h-5 bg-blue-600 rounded-full relative transition">
+                            <span id="onboardingModeDot" class="block w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 right-0.5 transition-all"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                    <button type="button" onclick="onboardingNextStep(2)" class="px-4 py-2.5 bg-flow-card hover:bg-flow-hover text-white text-xs rounded-xl transition">Zurück</button>
+                    <button type="button" onclick="finishOnboarding()" class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-xs font-semibold rounded-xl transition shadow-lg">
+                        Loslegen 🚀
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-flow-sidebar border-r border-flow-border transform -translate-x-full md:translate-x-0 md:static transition-all duration-300 flex flex-col shrink-0 overflow-hidden">
+        <div class="p-4 flex items-center justify-between border-b border-flow-border/60">
+            <button type="button" onclick="startNewChat()" class="flex-1 flex items-center justify-center space-x-2 bg-flow-card hover:bg-flow-hover border border-flow-border text-white text-xs font-medium py-2.5 px-4 rounded-xl transition">
+                <i class="fa-solid fa-plus text-blue-400"></i>
+                <span>Neuer Chat</span>
+            </button>
+            <button type="button" onclick="toggleSidebar()" class="md:hidden ml-2 w-9 h-9 rounded-xl hover:bg-flow-hover flex items-center justify-center text-flow-muted">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1">
+            <div class="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-flow-muted">Verlauf</div>
+            <div id="chatHistoryList" class="space-y-1">
+                <!-- Verlaufseinträge -->
+            </div>
+        </div>
+
+        <div class="p-3 border-t border-flow-border/60 space-y-2">
+            <button type="button" onclick="openAuthModal()" class="w-full flex items-center justify-between bg-flow-card hover:bg-flow-hover px-3 py-2.5 rounded-xl border border-flow-border transition">
+                <div class="flex items-center space-x-2.5 truncate">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white shrink-0" id="userAvatarInitial">G</div>
+                    <div class="text-left truncate">
+                        <div id="sidebarUserName" class="text-xs font-medium text-white truncate">Gast</div>
+                        <div id="sidebarUserSub" class="text-[10px] text-flow-muted truncate">Klicke für Login / Profil</div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-[10px] text-flow-muted"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <div id="appShell" class="flex-1 flex flex-col relative overflow-hidden bg-flow-bg transition-all duration-300 mx-auto w-full">
+        <header class="h-14 px-4 flex items-center justify-between shrink-0 border-b border-flow-border/40">
+            <div class="flex items-center space-x-2.5">
+                <button type="button" onclick="toggleSidebar()" class="w-9 h-9 rounded-full hover:bg-flow-hover flex items-center justify-center text-flow-muted hover:text-white transition">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+                <div class="w-7 h-7 rounded-lg bg-black border border-flow-border/80 flex items-center justify-center shadow-sm shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-5 h-5" aria-hidden="true">
+                        <defs>
+                            <radialGradient id="flowStarGradHeader" cx="45%" cy="35%" r="60%">
+                                <stop offset="0%" stop-color="#f8fafc"/>
+                                <stop offset="45%" stop-color="#7dd3fc"/>
+                                <stop offset="80%" stop-color="#38bdf8"/>
+                                <stop offset="100%" stop-color="#1d4ed8"/>
+                            </radialGradient>
+                        </defs>
+                        <path d="M50 6 C52 38, 62 48, 94 50 C62 52, 52 62, 50 94 C48 62, 38 52, 6 50 C38 48, 48 38, 50 6 Z" fill="url(#flowStarGradHeader)"/>
+                    </svg>
+                </div>
+                <span class="text-lg font-medium tracking-tight flow-gradient-text">Flow AI Studio</span>
+            </div>
+
+            <!-- Dynamischer Wissens-Balken per Nachricht / Skript (klickbar) -->
+            <div id="liveKnowledgeBar" onclick="openKnowledgeTableModal()" class="flex items-center space-x-2 bg-flow-card hover:bg-flow-hover border border-flow-border px-3 py-1.5 rounded-full text-xs cursor-pointer transition group" title="Klicken, um alle Skript-Wissen-Einträge als Tabelle anzuzeigen">
+                <i class="fa-solid fa-brain text-purple-400 group-hover:scale-110 transition"></i>
+                <span class="text-flow-muted hidden sm:inline">Skript-Wissen:</span>
+                <span id="knowledgeCountBadge" class="font-bold text-white">0</span>
+                <span class="text-flow-muted hidden sm:inline">Einträge</span>
+                <i class="fa-solid fa-table-list text-xs text-blue-400 ml-1"></i>
+            </div>
+
+            <div class="flex items-center space-x-1.5">
+                <button type="button" onclick="openFlowAboutModal()" class="w-9 h-9 rounded-full hover:bg-flow-hover flex items-center justify-center text-flow-muted hover:text-white transition" title="Über Flow AI Studio">
+                    <i class="fa-solid fa-circle-info text-base"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main id="chatScrollContainer" class="flex-1 overflow-y-auto custom-scrollbar px-4 py-6">
+            <div id="chatMessages" class="max-w-3xl mx-auto space-y-6">
+                <!-- Welcome Screen -->
+                <div id="welcomeScreen" class="py-12 text-center space-y-4">
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-black border border-flow-border/80 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <svg viewBox="0 0 100 100" class="w-12 h-12" aria-label="Flow AI Studio Icon">
+                            <defs>
+                                <radialGradient id="flowStarGradWelcome" cx="45%" cy="35%" r="60%">
+                                    <stop offset="0%" stop-color="#f8fafc"/>
+                                    <stop offset="45%" stop-color="#7dd3fc"/>
+                                    <stop offset="80%" stop-color="#38bdf8"/>
+                                    <stop offset="100%" stop-color="#1d4ed8"/>
+                                </radialGradient>
+                            </defs>
+                            <path d="M50 6 C52 38, 62 48, 94 50 C62 52, 52 62, 50 94 C48 62, 38 52, 6 50 C38 48, 48 38, 50 6 Z" fill="url(#flowStarGradWelcome)"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-semibold text-white">Willkommen bei <span class="flow-gradient-text">Flow AI Studio</span></h1>
+                    <p class="text-sm text-flow-muted max-w-md mx-auto">Stelle Wissensfragen, berechne Matheaufgaben oder trainiere mich dauerhaft mit <code class="bg-flow-card px-1.5 py-0.5 rounded text-blue-400">#learning</code>.</p>
+                    <div class="flex flex-wrap justify-center gap-2 pt-2">
+                        <button type="button" onclick="quickPrompt('Hallo')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">👋 Hallo</button>
+                        <button type="button" onclick="quickPrompt('Hauptstadt von Kanada')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">🇨🇦 Hauptstadt von Kanada</button>
+                        <button type="button" onclick="quickPrompt('eins plus eins')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">🧮 eins plus eins</button>
+                        <button type="button" onclick="quickPrompt('#learning')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-purple-300 transition">🧠 #learning starten</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Input Bar -->
+        <footer class="p-4 border-t border-flow-border/40 bg-flow-bg">
+            <div class="max-w-3xl mx-auto">
+                <form id="chatForm" onsubmit="handleChatSubmit(event)" class="relative flex items-center bg-flow-card border border-flow-border focus-within:border-blue-500 rounded-2xl px-4 py-2.5 shadow-lg transition">
+                    <input type="text" id="chatInput" autocomplete="off" placeholder="Schreibe eine Nachricht, Rechenaufgabe oder #learning..." class="flex-1 bg-transparent text-sm text-white placeholder-flow-muted focus:outline-none pr-3">
+                    <button type="submit" class="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shrink-0">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+                <div class="text-center mt-2">
+                    <span class="text-[11px] text-flow-muted">Tipp: Schreibe <span class="text-blue-400 font-mono">#learning</span> und danach <span class="text-flow-text font-mono">Frage = Antwort</span>, um Flow dauerhaft zu trainieren.</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden"></div>
+
+    <!-- Info-Menü Modal -->
+    <div id="flowAboutModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeFlowAboutModal()">
+        <div class="bg-flow-sidebar border border-flow-border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">Über Flow AI Studio</h3>
+                <button type="button" onclick="closeFlowAboutModal()" class="w-8 h-8 rounded-full hover:bg-flow-hover flex items-center justify-center text-flow-muted hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-flow-muted leading-relaxed">
+                Flow AI Studio ist dein lokales KI-Studio mit dauerhaftem Wissensspeicher (<code class="text-blue-400">#learning</code>), intelligenter Ähnlichkeits- & Tippfehler-Erkennung sowie integriertem Mathe-Rechner.
+            </p>
+            <div class="flex justify-end">
+                <button type="button" onclick="closeFlowAboutModal()" class="px-4 py-2 bg-white text-black text-xs font-medium rounded-xl hover:bg-slate-200 transition">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login / Profil Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeAuthModal()">
+        <div class="bg-flow-sidebar border border-flow-border rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">Profil & Anmeldung</h3>
+                <button type="button" onclick="closeAuthModal()" class="w-8 h-8 rounded-full hover:bg-flow-hover flex items-center justify-center text-flow-muted hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-flow-muted mb-1">Benutzername</label>
+                    <input type="text" id="authNameInput" placeholder="Dein Name" class="w-full bg-flow-card border border-flow-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-flow-muted mb-1">Alter (für Altersanpassung)</label>
+                    <input type="number" id="authAgeInput" placeholder="25" min="1" max="120" class="w-full bg-flow-card border border-flow-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeAuthModal()" class="px-4 py-2 bg-flow-card hover:bg-flow-hover text-xs text-white rounded-xl transition">Abbrechen</button>
+                <button type="button" onclick="saveUserProfile()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-xs text-white font-medium rounded-xl transition">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wissens-Tabelle Modal -->
+    <div id="knowledgeTableModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="closeKnowledgeTableModal()">
+        <div class="bg-flow-sidebar border border-flow-border rounded-3xl p-6 max-w-2xl w-full shadow-2xl space-y-4 max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between pb-3 border-b border-flow-border">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-table-cells text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-semibold text-white">Gesamtes Skript-Wissen</h3>
+                        <p class="text-xs text-flow-muted">Alle gespeicherten Fragen, Befehle und Antworten im Überblick</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeKnowledgeTableModal()" class="w-8 h-8 rounded-full hover:bg-flow-hover flex items-center justify-center text-flow-muted hover:text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Suchfeld für die Tabelle -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-flow-muted text-xs"></i>
+                <input type="text" id="knowledgeSearchInput" oninput="filterKnowledgeTable(this.value)" placeholder="Wissen durchsuchen (Frage oder Antwort)..." class="w-full bg-[#131417] border border-flow-border focus:border-blue-500 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none transition">
+            </div>
+
+            <!-- Tabelle mit Scroll -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar border border-flow-border rounded-2xl bg-[#131417]">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-[#18191c] border-b border-flow-border text-[11px] text-flow-muted uppercase tracking-wider">
+                        <tr>
+                            <th class="p-3.5 font-semibold w-1/2">Was man eingibt (Frage / Befehl)</th>
+                            <th class="p-3.5 font-semibold w-1/2">Was herauskommt (Antwort)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="knowledgeTableBody" class="divide-y divide-flow-border text-xs">
+                        <!-- Wird per JS befüllt -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <span id="knowledgeTableCount" class="text-xs text-flow-muted">0 Einträge insgesamt</span>
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="exportUpdatedScript()" class="px-4 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border text-white text-xs font-medium rounded-xl transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-blue-400"></i>
+                        <span>Als JSON exportieren</span>
+                    </button>
+                    <button type="button" onclick="closeKnowledgeTableModal()" class="px-4 py-2 bg-white hover:bg-slate-200 text-black text-xs font-medium rounded-xl transition shadow">
+                        Schließen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HAUPT-SCRIPT -->
+    <script>
+        /* ===== GLOBALE ZUSTANDSVARIABLEN ===== */
+        let learnedKnowledge = {
+            "hallo": "Hallo, wie geht es dir? Bei was kann ich dir helfen?",
+            "wie viel wasser sollte ein mensch am tag trinken": "Ein Erwachsener sollte durchschnittlich etwa 1.5 bis 2 Liter Wasser pro Tag trinken, bei Sport oder Hitze entsprechend mehr.",
+            "wie lange muss ein ei kochen damit es weich ist": "Für ein weichgekochtes Ei (flüssiges Eigelb) legt man es für genau 5 bis 6 Minuten in kochendes Wasser.",
+            "was ist eine variable": "Programmierung bedeutet, einem Computer genaue Anweisungen zu geben. Eine Variable speichert zum Beispiel einen Wert; eine Schleife wiederholt Anweisungen.",
+            "was ist python": "Python ist eine beliebte, leicht lesbare Programmiersprache – ideal für Einsteiger, Webentwicklung und Künstliche Intelligenz.",
+            "was ist künstliche intelligenz": "Künstliche Intelligenz (KI) ist Software, die Aufgaben wie Texterkennung oder Vorhersagen ausführen kann. Maschinelles Lernen ist eine Methode, bei der ein Modell Muster aus Beispielen lernt.",
+            "was ist wasser": "Wasser besteht aus Wasserstoff und Sauerstoff (H₂O) und ist lebenswichtig für alle bekannten Lebewesen.",
+            "warum ist der himmel blau": "Sonnenlicht wird in der Erdatmosphäre gestreut – kurzwelliges blaues Licht streut stärker als rotes, weshalb der Himmel blau erscheint.",
+            "hauptstadt der schweiz": "Die Bundesstadt (de-facto-Hauptstadt) der Schweiz ist Bern.",
+            "hauptstadt von deutschland": "Die Hauptstadt von Deutschland ist Berlin.",
+            "hauptstadt von österreich": "Die Hauptstadt von Österreich ist Wien.",
+            "hauptstadt von frankreich": "Die Hauptstadt von Frankreich ist Paris.",
+            "hauptstadt von italien": "Die Hauptstadt von Italien ist Rom.",
+            "hauptstadt von spanien": "Die Hauptstadt von Spanien ist Madrid.",
+            "hauptstadt der usa": "Die Hauptstadt der USA ist Washington, D.C.",
+            "hauptstadt von japan": "Die Hauptstadt von Japan ist Tokio."
+        };
+        window.learnedKnowledge = learnedKnowledge;
+
+        let awaitingLearningInput = false;
+        let isNormalMode = true;
+        let currentUser = { name: "Gast", age: 25 };
+        let selectedLayout = "desktop";
+        let savedAccounts = {};
+        let chatSessions = [];
+        let activeChatId = null;
+
+        /* ===== ONBOARDING STEUERUNG ===== */
+        function onboardingNextStep(step) {
+            const desc = document.getElementById("onboardingStepDesc");
+            const s1 = document.getElementById("onboardingStep1");
+            const s2 = document.getElementById("onboardingStep2");
+            const s3 = document.getElementById("onboardingStep3");
+
+            if (step === 1) {
+                if (desc) desc.innerText = "Schritt 1 von 3: Bitte gib deinen Namen ein.";
+                if (s1) s1.classList.remove("hidden");
+                if (s2) s2.classList.add("hidden");
+                if (s3) s3.classList.add("hidden");
+            } else if (step === 2) {
+                const nameInput = document.getElementById("onboardingNameInput");
+                if (nameInput && nameInput.value.trim()) {
+                    currentUser.name = nameInput.value.trim();
+                }
+                if (desc) desc.innerText = "Schritt 2 von 3: Wähle dein bevorzugtes Layout.";
+                if (s1) s1.classList.add("hidden");
+                if (s2) s2.classList.remove("hidden");
+                if (s3) s3.classList.add("hidden");
+            } else if (step === 3) {
+                if (desc) desc.innerText = "Schritt 3 von 3: Bestätige dein Alter und den Standard-Modus.";
+                if (s1) s1.classList.add("hidden");
+                if (s2) s2.classList.add("hidden");
+                if (s3) s3.classList.remove("hidden");
+                initAgeRuler();
+            }
+        }
+
+        function selectOnboardingLayout(layout) {
+            selectedLayout = layout;
+            const mobileCard = document.getElementById("layoutCardMobile");
+            const desktopCard = document.getElementById("layoutCardDesktop");
+            const appShell = document.getElementById("appShell");
+
+            if (mobileCard && desktopCard) {
+                if (layout === "mobile") {
+                    mobileCard.classList.add("border-blue-500", "ring-1", "ring-blue-500");
+                    mobileCard.classList.remove("border-flow-border");
+                    desktopCard.classList.remove("border-blue-500", "ring-1", "ring-blue-500");
+                    desktopCard.classList.add("border-flow-border");
+                } else {
+                    desktopCard.classList.add("border-blue-500", "ring-1", "ring-blue-500");
+                    desktopCard.classList.remove("border-flow-border");
+                    mobileCard.classList.remove("border-blue-500", "ring-1", "ring-blue-500");
+                    mobileCard.classList.add("border-flow-border");
+                }
+            }
+
+            if (appShell) {
+                if (layout === "mobile") {
+                    appShell.classList.add("max-w-[430px]", "border-x", "border-flow-border", "shadow-2xl");
+                } else {
+                    appShell.classList.remove("max-w-[430px]", "border-x", "border-flow-border", "shadow-2xl");
+                }
+            }
+        }
+
+        function toggleOnboardingMode() {
+            isNormalMode = !isNormalMode;
+            const btn = document.getElementById("onboardingModeBtn");
+            const dot = document.getElementById("onboardingModeDot");
+            const ageWrapper = document.getElementById("ageSectionWrapper");
+
+            if (btn && dot) {
+                if (isNormalMode) {
+                    btn.classList.remove("bg-flow-border");
+                    btn.classList.add("bg-blue-600");
+                    dot.classList.remove("left-0.5");
+                    dot.classList.add("right-0.5");
+                } else {
+                    btn.classList.remove("bg-blue-600");
+                    btn.classList.add("bg-flow-border");
+                    dot.classList.remove("right-0.5");
+                    dot.classList.add("left-0.5");
+                }
+            }
+
+            if (ageWrapper) {
+                if (isNormalMode) {
+                    ageWrapper.classList.add("opacity-40", "grayscale", "pointer-events-none", "select-none");
+                } else {
+                    ageWrapper.classList.remove("opacity-40", "grayscale", "pointer-events-none", "select-none");
+                }
+            }
+        }
+
+        function initAgeRuler() {
+            const track = document.getElementById("ageRulerTrack");
+            const scroller = document.getElementById("ageRulerScroll");
+            if (!track || !scroller) return;
+
+            if (track.children.length === 0) {
+                let html = "";
+                for (let age = 5; age <= 99; age++) {
+                    const isMajor = age % 5 === 0;
+                    html += `
+                        <div data-age="${age}" onclick="scrollToAge(${age})" class="age-tick-row snap-center h-6 w-full px-6 flex items-center justify-between cursor-pointer group">
+                            <span class="age-tick-label text-[11px] font-mono w-8 text-right transition-all duration-150 ${isMajor ? 'text-flow-muted font-semibold' : 'text-transparent'}">${age}</span>
+                            <div class="flex-1 flex justify-center">
+                                <div class="age-tick-bar h-[2px] rounded-full transition-all duration-150 bg-flow-border" style="width: ${isMajor ? '36px' : '20px'};"></div>
+                            </div>
+                            <span class="w-8"></span>
+                        </div>
+                    `;
+                }
+                track.innerHTML = html;
+            }
+
+            // Standardmäßig auf 25 Jahre scrollen
+            const currentVal = parseInt(document.getElementById("onboardingAgeSelect")?.value || "25", 10);
+            setTimeout(() => {
+                scrollToAge(currentVal, false);
+                updateAgeRuler();
+            }, 20);
+        }
+
+        function scrollToAge(age, smooth = true) {
+            const scroller = document.getElementById("ageRulerScroll");
+            if (!scroller) return;
+            const index = Math.max(0, Math.min(94, age - 5));
+            const targetTop = index * 24;
+            scroller.scrollTo({ top: targetTop, behavior: smooth ? "smooth" : "auto" });
+        }
+
+        function updateAgeRuler() {
+            const scroller = document.getElementById("ageRulerScroll");
+            const track = document.getElementById("ageRulerTrack");
+            const display = document.getElementById("ageRulerDisplay");
+            const hiddenInput = document.getElementById("onboardingAgeSelect");
+            if (!scroller || !track) return;
+
+            const itemHeight = 24;
+            const centerOffset = scroller.scrollTop;
+            const activeIndex = Math.max(0, Math.min(94, Math.round(centerOffset / itemHeight)));
+            const activeAge = activeIndex + 5;
+
+            if (display) display.innerText = activeAge;
+            if (hiddenInput) hiddenInput.value = activeAge;
+
+            const rows = track.children;
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const bar = row.querySelector(".age-tick-bar");
+                const label = row.querySelector(".age-tick-label");
+                const ageVal = i + 5;
+                const dist = Math.abs(i - activeIndex);
+
+                if (dist === 0) {
+                    bar.style.width = "76px";
+                    bar.style.height = "3.5px";
+                    bar.classList.add("age-tick-active");
+                    label.className = "age-tick-label text-xs font-bold flow-gradient-text w-8 text-right transition-all duration-150";
+                } else if (dist === 1) {
+                    bar.style.width = "54px";
+                    bar.style.height = "2.5px";
+                    bar.classList.remove("age-tick-active");
+                    bar.style.background = "linear-gradient(90deg, rgba(96,165,250,0.65), rgba(192,132,252,0.65))";
+                    label.className = "age-tick-label text-[11px] font-medium text-slate-300 w-8 text-right transition-all duration-150";
+                } else if (dist === 2) {
+                    bar.style.width = "38px";
+                    bar.style.height = "2px";
+                    bar.classList.remove("age-tick-active");
+                    bar.style.background = "rgba(148, 152, 161, 0.45)";
+                    label.className = `age-tick-label text-[10px] font-mono w-8 text-right transition-all duration-150 ${ageVal % 5 === 0 ? 'text-flow-muted' : 'text-transparent'}`;
+                } else {
+                    const isMajor = ageVal % 5 === 0;
+                    bar.style.width = isMajor ? "28px" : "16px";
+                    bar.style.height = "2px";
+                    bar.classList.remove("age-tick-active");
+                    bar.style.background = "";
+                    label.className = `age-tick-label text-[10px] font-mono w-8 text-right transition-all duration-150 ${isMajor ? 'text-flow-muted/70' : 'text-transparent'}`;
+                }
+            }
+        }
+
+        function finishOnboarding() {
+            const ageSelect = document.getElementById("onboardingAgeSelect");
+            if (ageSelect) {
+                currentUser.age = parseInt(ageSelect.value, 10) || 25;
+            }
+            if (!currentUser.name) currentUser.name = "Gast";
+            
+            savedAccounts[currentUser.name.toLowerCase()] = currentUser;
+            try {
+                localStorage.setItem("flow_onboarding_done_v1", "true");
+                localStorage.setItem("flow_current_user_v1", JSON.stringify(currentUser));
+                localStorage.setItem("flow_saved_accounts_v1", JSON.stringify(savedAccounts));
+            } catch (e) {}
+
+            const modal = document.getElementById("onboardingModal");
+            if (modal) modal.classList.add("hidden");
+
+            updateUserSidebar();
+            // Sync mode button in sidebar
+            const sbBtn = document.getElementById("modeToggleBtn");
+            const sbDot = document.getElementById("modeToggleDot");
+            if (sbBtn && sbDot) {
+                if (isNormalMode) {
+                    sbBtn.classList.add("bg-blue-600");
+                    sbBtn.classList.remove("bg-purple-600");
+                } else {
+                    sbBtn.classList.add("bg-purple-600");
+                    sbBtn.classList.remove("bg-blue-600");
+                }
+            }
+        }
+
+        /* ===== HILFSFUNKTIONEN ===== */
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function normalizePromptText(text) {
+            return String(text || "")
+                .toLowerCase()
+                .trim()
+                .replace(/[?!.,;:()\[\]"'„“”‚‘’`´]+/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function evaluateMath(expr) {
+            let cleaned = String(expr || "")
+                .toLowerCase()
+                .trim()
+                .replace(/^(was ist|berechne|rechne)\s+/i, "")
+                .replace(/[?!]+$/, "")
+                .replace(/(?<=\d),(?=\d)/g, ".")
+                .replace(/\bgeteilt durch\b/g, "/")
+                .replace(/\bdividiert durch\b/g, "/")
+                .replace(/\bmultipliziert mit\b/g, "*")
+                .replace(/\bplus\b/g, "+")
+                .replace(/\bminus\b/g, "-")
+                .replace(/\bmal\b/g, "*")
+                .replace(/\bdurch\b/g, "/")
+                .replace(/\bhoch\b/g, "**")
+                .replace(/\^/g, "**");
+
+            if (!/^[0-9eE.+*/()\- ]+$/.test(cleaned) || !/\d/.test(cleaned)) {
+                throw new Error("Ungültiger Rechenausdruck");
+            }
+            const result = Function('"use strict"; return (' + cleaned + ')')();
+            if (typeof result !== "number" || !isFinite(result)) {
+                throw new Error("Ungültiges Ergebnis");
+            }
+            return Number(result.toFixed(8));
+        }
+
+        function loadGlobalKnowledge() {
+            try {
+                const stored = localStorage.getItem("flow_global_knowledge_v3");
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && typeof parsed === "object") {
+                        Object.assign(learnedKnowledge, parsed);
+                    }
+                }
+            } catch (e) {
+                console.error("Fehler beim Laden des Wissens:", e);
+            }
+            try {
+                if (window.name && window.name.startsWith("FLOW_KB:")) {
+                    const parsedWin = JSON.parse(window.name.slice(8));
+                    if (parsedWin && typeof parsedWin === "object") {
+                        Object.assign(learnedKnowledge, parsedWin);
+                    }
+                }
+            } catch (e) {}
+            window.learnedKnowledge = learnedKnowledge;
+        }
+
+        function saveGlobalKnowledge() {
+            window.learnedKnowledge = learnedKnowledge;
+            try {
+                localStorage.setItem("flow_global_knowledge_v3", JSON.stringify(learnedKnowledge));
+            } catch (e) {}
+            try {
+                window.name = "FLOW_KB:" + JSON.stringify(learnedKnowledge);
+            } catch (e) {}
+            updateKnowledgeBadge();
+        }
+
+        function updateKnowledgeBadge() {
+            const badge = document.getElementById("knowledgeCountBadge");
+            if (badge) {
+                badge.innerText = Object.keys(learnedKnowledge).length;
+            }
+        }
+
+        /* ===== CHAT-VERLAUF & UI ===== */
+        function toggleSidebar() {
+            const sb = document.getElementById("sidebar");
+            const ov = document.getElementById("sidebarOverlay");
+            if (!sb) return;
+
+            if (window.innerWidth >= 768) {
+                // Desktop: Seitenleiste sanft einklappen oder wieder ausklappen
+                const isCollapsed = sb.classList.contains("md:w-0");
+                if (isCollapsed) {
+                    sb.classList.remove("md:w-0", "md:border-r-0", "md:opacity-0", "md:pointer-events-none");
+                    sb.classList.add("w-72");
+                } else {
+                    sb.classList.remove("w-72");
+                    sb.classList.add("md:w-0", "md:border-r-0", "md:opacity-0", "md:pointer-events-none");
+                }
+            } else {
+                // Mobil: Slide-In / Slide-Out mit Overlay
+                sb.classList.toggle("-translate-x-full");
+                if (ov) ov.classList.toggle("hidden");
+            }
+        }
+
+        function toggleNormalMode() {
+            isNormalMode = !isNormalMode;
+            const btn = document.getElementById("modeToggleBtn");
+            const dot = document.getElementById("modeToggleDot");
+            if (btn && dot) {
+                if (isNormalMode) {
+                    btn.classList.remove("bg-purple-600");
+                    btn.classList.add("bg-blue-600");
+                    dot.classList.remove("left-0.5");
+                    dot.classList.add("right-0.5");
+                } else {
+                    btn.classList.remove("bg-blue-600");
+                    btn.classList.add("bg-purple-600");
+                    dot.classList.remove("right-0.5");
+                    dot.classList.add("left-0.5");
+                }
+            }
+        }
+
+        function openFlowAboutModal() {
+            const m = document.getElementById("flowAboutModal");
+            if (m) m.classList.remove("hidden");
+        }
+
+        function closeFlowAboutModal() {
+            const m = document.getElementById("flowAboutModal");
+            if (m) m.classList.add("hidden");
+        }
+
+        function openAuthModal() {
+            const nameIn = document.getElementById("authNameInput");
+            const ageIn = document.getElementById("authAgeInput");
+            if (nameIn) nameIn.value = currentUser.name === "Gast" ? "" : currentUser.name;
+            if (ageIn) ageIn.value = currentUser.age || 25;
+            const m = document.getElementById("authModal");
+            if (m) m.classList.remove("hidden");
+        }
+
+        function closeAuthModal() {
+            const m = document.getElementById("authModal");
+            if (m) m.classList.add("hidden");
+        }
+
+        function saveUserProfile() {
+            const nameIn = document.getElementById("authNameInput");
+            const ageIn = document.getElementById("authAgeInput");
+            const newName = (nameIn && nameIn.value.trim()) ? nameIn.value.trim() : "Gast";
+            const newAge = (ageIn && parseInt(ageIn.value, 10)) ? parseInt(ageIn.value, 10) : 25;
+            currentUser = { name: newName, age: newAge };
+            savedAccounts[newName.toLowerCase()] = currentUser;
+            try {
+                localStorage.setItem("flow_saved_accounts_v1", JSON.stringify(savedAccounts));
+                localStorage.setItem("flow_current_user_v1", JSON.stringify(currentUser));
+            } catch (e) {}
+            updateUserSidebar();
+            closeAuthModal();
+        }
+
+        function updateUserSidebar() {
+            const nameEl = document.getElementById("sidebarUserName");
+            const subEl = document.getElementById("sidebarUserSub");
+            const avEl = document.getElementById("userAvatarInitial");
+            if (nameEl) nameEl.innerText = currentUser.name;
+            if (subEl) subEl.innerText = "Alter: " + currentUser.age + " · Aktiv";
+            if (avEl) avEl.innerText = currentUser.name.charAt(0).toUpperCase();
+        }
+
+        function loadChatSessions() {
+            try {
+                const raw = localStorage.getItem("flow_chat_sessions_v1");
+                if (raw) chatSessions = JSON.parse(raw) || [];
+            } catch (e) {
+                chatSessions = [];
+            }
+            renderChatHistoryList();
+        }
+
+        function saveChatSessions() {
+            try {
+                localStorage.setItem("flow_chat_sessions_v1", JSON.stringify(chatSessions));
+            } catch (e) {}
+            renderChatHistoryList();
+        }
+
+        function renderChatHistoryList() {
+            const list = document.getElementById("chatHistoryList");
+            if (!list) return;
+            if (chatSessions.length === 0) {
+                list.innerHTML = '<div class="px-2 py-3 text-xs text-flow-muted italic">Noch keine Chats gespeichert.</div>';
+                return;
+            }
+            list.innerHTML = chatSessions.map(s => `
+                <div onclick="loadChatSession('${s.id}')" class="group flex items-center justify-between px-3 py-2 rounded-xl text-xs cursor-pointer transition ${s.id === activeChatId ? 'bg-flow-card text-white font-medium' : 'text-flow-muted hover:bg-flow-hover hover:text-white'}">
+                    <span class="truncate pr-2">${escapeHtml(s.title)}</span>
+                    <button type="button" onclick="deleteChatSession(event, '${s.id}')" class="opacity-0 group-hover:opacity-100 text-flow-muted hover:text-red-400 transition">
+                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                    </button>
+                </div>
+            `).join("");
+        }
+
+        function startNewChat() {
+            activeChatId = null;
+            awaitingLearningInput = false;
+            const container = document.getElementById("chatMessages");
+            if (container) {
+                container.innerHTML = `
+                    <div id="welcomeScreen" class="py-12 text-center space-y-4">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-black border border-flow-border/80 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <svg viewBox="0 0 100 100" class="w-12 h-12" aria-label="Flow AI Studio Icon">
+                                <defs>
+                                    <radialGradient id="flowStarGradReset" cx="45%" cy="35%" r="60%">
+                                        <stop offset="0%" stop-color="#f8fafc"/>
+                                        <stop offset="45%" stop-color="#7dd3fc"/>
+                                        <stop offset="80%" stop-color="#38bdf8"/>
+                                        <stop offset="100%" stop-color="#1d4ed8"/>
+                                    </radialGradient>
+                                </defs>
+                                <path d="M50 6 C52 38, 62 48, 94 50 C62 52, 52 62, 50 94 C48 62, 38 52, 6 50 C38 48, 48 38, 50 6 Z" fill="url(#flowStarGradReset)"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-semibold text-white">Willkommen bei <span class="flow-gradient-text">Flow AI Studio</span></h1>
+                        <p class="text-sm text-flow-muted max-w-md mx-auto">Stelle Wissensfragen, berechne Matheaufgaben oder trainiere mich dauerhaft mit <code class="bg-flow-card px-1.5 py-0.5 rounded text-blue-400">#learning</code>.</p>
+                        <div class="flex flex-wrap justify-center gap-2 pt-2">
+                            <button type="button" onclick="quickPrompt('Hallo')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">👋 Hallo</button>
+                            <button type="button" onclick="quickPrompt('Hauptstadt von Kanada')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">🇨🇦 Hauptstadt von Kanada</button>
+                            <button type="button" onclick="quickPrompt('eins plus eins')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-flow-text transition">🧮 eins plus eins</button>
+                            <button type="button" onclick="quickPrompt('#learning')" class="px-3.5 py-2 bg-flow-card hover:bg-flow-hover border border-flow-border rounded-xl text-xs text-purple-300 transition">🧠 #learning starten</button>
+                        </div>
+                    </div>
+                `;
+            }
+            renderChatHistoryList();
+        }
+
+        function loadChatSession(id) {
+            const session = chatSessions.find(s => s.id === id);
+            if (!session) return;
+            activeChatId = session.id;
+            const container = document.getElementById("chatMessages");
+            if (!container) return;
+            container.innerHTML = "";
+            session.messages.forEach(m => {
+                if (m.role === "user") appendUserMessage(m.text);
+                else appendAiTextMessage(m.text);
+            });
+            renderChatHistoryList();
+        }
+
+        function deleteChatSession(e, id) {
+            e.stopPropagation();
+            chatSessions = chatSessions.filter(s => s.id !== id);
+            if (activeChatId === id) startNewChat();
+            saveChatSessions();
+        }
+
+        function quickPrompt(text) {
+            const input = document.getElementById("chatInput");
+            if (input) {
+                input.value = text;
+                handleChatSubmit(new Event("submit"));
+            }
+        }
+
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById("chatInput");
+            if (!input) return;
+            const query = input.value.trim();
+            if (!query) return;
+            input.value = "";
+
+            const welcome = document.getElementById("welcomeScreen");
+            if (welcome) welcome.remove();
+
+            appendUserMessage(query);
+            processFlowEngineResponse(query);
+        }
+
+        function appendUserMessage(text) {
+            const container = document.getElementById("chatMessages");
+            if (!container) return;
+            const div = document.createElement("div");
+            div.className = "flex justify-end";
+            div.innerHTML = `<div class="max-w-[80%] bg-flow-card border border-flow-border text-white text-sm px-4 py-3 rounded-2xl rounded-br-sm shadow">${escapeHtml(text)}</div>`;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function appendAiTextMessage(text) {
+            const container = document.getElementById("chatMessages");
+            if (!container) return;
+            const div = document.createElement("div");
+            div.className = "flex items-start space-x-3";
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-black border border-flow-border/80 flex items-center justify-center shrink-0 mt-0.5 shadow">
+                    <svg viewBox="0 0 100 100" class="w-5 h-5" aria-hidden="true">
+                        <defs>
+                            <radialGradient id="flowStarGradMsg" cx="45%" cy="35%" r="60%">
+                                <stop offset="0%" stop-color="#f8fafc"/>
+                                <stop offset="45%" stop-color="#7dd3fc"/>
+                                <stop offset="80%" stop-color="#38bdf8"/>
+                                <stop offset="100%" stop-color="#1d4ed8"/>
+                            </radialGradient>
+                        </defs>
+                        <path d="M50 6 C52 38, 62 48, 94 50 C62 52, 52 62, 50 94 C48 62, 38 52, 6 50 C38 48, 48 38, 50 6 Z" fill="url(#flowStarGradMsg)"/>
+                    </svg>
+                </div>
+                <div class="flex-1 text-sm text-flow-text leading-relaxed bg-flow-sidebar/60 border border-flow-border/50 px-4 py-3 rounded-2xl rounded-tl-sm whitespace-pre-line">${escapeHtml(text)}</div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const sc = document.getElementById("chatScrollContainer");
+            if (sc) sc.scrollTop = sc.scrollHeight;
+        }
+
+        function finishResponseCycle(query, answer) {
+            appendAiTextMessage(answer);
+
+            if (!activeChatId) {
+                activeChatId = "chat_" + Date.now();
+                chatSessions.unshift({
+                    id: activeChatId,
+                    title: query.slice(0, 36),
+                    messages: []
+                });
+            }
+            const session = chatSessions.find(s => s.id === activeChatId);
+            if (session) {
+                session.messages.push({ role: "user", text: query });
+                session.messages.push({ role: "ai", text: answer });
+                saveChatSessions();
+            }
+        }
+
+        /* ===== HAUPT-ANTWORTLOGIK (Basis + #learning) ===== */
+        function processFlowEngineResponse(query) {
+            const trimmed = query.trim();
+            const lower = trimmed.toLowerCase();
+
+            // 1. Direktes #learning im Format "#learning Frage = Antwort"
+            if (lower.startsWith("#learning")) {
+                const rest = trimmed.slice(9).trim();
+                if (rest.includes("=")) {
+                    const eqIdx = rest.indexOf("=");
+                    const qKey = normalizePromptText(rest.slice(0, eqIdx));
+                    const aVal = rest.slice(eqIdx + 1).trim();
+                    if (qKey && aVal) {
+                        learnedKnowledge[qKey] = aVal;
+                        saveGlobalKnowledge();
+                        awaitingLearningInput = false;
+                        finishResponseCycle(query, `Gelernt! 🧠 Wenn du fragst „${rest.slice(0, eqIdx).trim()}“, antworte ich ab sofort: „${aVal}“`);
+                        return;
+                    }
+                }
+                awaitingLearningInput = true;
+                finishResponseCycle(query, "Lernmodus aktiv! 🧠 Bitte gib jetzt deine neue Regel im Format:\nFrage = Antwort\n(z. B. Wie heisst mein Hund = Bello)");
+                return;
+            }
+
+            // 2. Wartend auf #learning Eingabe
+            if (awaitingLearningInput) {
+                if (lower === "abbrechen" || lower === "stop") {
+                    awaitingLearningInput = false;
+                    finishResponseCycle(query, "Lernmodus beendet.");
+                    return;
+                }
+                if (trimmed.includes("=")) {
+                    const eqIdx = trimmed.indexOf("=");
+                    const qKey = normalizePromptText(trimmed.slice(0, eqIdx));
+                    const aVal = trimmed.slice(eqIdx + 1).trim();
+                    if (qKey && aVal) {
+                        learnedKnowledge[qKey] = aVal;
+                        saveGlobalKnowledge();
+                        awaitingLearningInput = false;
+                        finishResponseCycle(query, `Gespeichert! 🧠 Ich habe gelernt: „${trimmed.slice(0, eqIdx).trim()}“ → „${aVal}“`);
+                        return;
+                    }
+                }
+                finishResponseCycle(query, "Bitte nutze das Format: Frage = Antwort (oder schreibe 'abbrechen').");
+                return;
+            }
+
+            // 3. Basis-Suche im gespeicherten Wissen
+            loadGlobalKnowledge();
+            const norm = normalizePromptText(query);
+            let answer = null;
+            for (const [k, v] of Object.entries(learnedKnowledge)) {
+                if (normalizePromptText(k) === norm) {
+                    answer = v;
+                    break;
+                }
+            }
+
+            // 4. Mathe-Fallback
+            if (answer === null) {
+                try {
+                    const res = evaluateMath(query);
+                    answer = "Ergebnis: " + res;
+                } catch (e) {
+                    answer = "Dies weiß ich noch nicht, aber du kannst mich lernen mit #learning";
+                }
+            }
+
+            if (!isNormalMode && (currentUser.age || 25) < 13) {
+                answer = "Hey! 😊 " + answer;
+            }
+            finishResponseCycle(query, answer);
+        }
+
+        /* ===== WISSENS-TABELLE FUNKTIONEN ===== */
+        function openKnowledgeTableModal() {
+            try {
+                loadGlobalKnowledge();
+                renderKnowledgeTable("");
+                const searchInput = document.getElementById("knowledgeSearchInput");
+                if (searchInput) searchInput.value = "";
+                const modal = document.getElementById("knowledgeTableModal");
+                if (modal) modal.classList.remove("hidden");
+            } catch (e) {
+                console.error("Fehler beim Öffnen der Wissens-Tabelle:", e);
+            }
+        }
+
+        function closeKnowledgeTableModal() {
+            const modal = document.getElementById("knowledgeTableModal");
+            if (modal) modal.classList.add("hidden");
+        }
+
+        function filterKnowledgeTable(query) {
+            renderKnowledgeTable(query);
+        }
+
+        function exportUpdatedScript() {
+            try {
+                loadGlobalKnowledge();
+                const dataStr = JSON.stringify(learnedKnowledge || {}, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "flow_skript_wissen.json";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                console.error("Export fehlgeschlagen:", e);
+            }
+        }
+
+        function renderKnowledgeTable(filterText) {
+            const tbody = document.getElementById("knowledgeTableBody");
+            const countLabel = document.getElementById("knowledgeTableCount");
+            if (!tbody) return;
+
+            const entries = Object.entries(learnedKnowledge || {});
+            const lowerFilter = (filterText || "").toLowerCase().trim();
+
+            const filtered = entries.filter(([k, v]) => {
+                return k.toLowerCase().includes(lowerFilter) || String(v).toLowerCase().includes(lowerFilter);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="p-6 text-center text-flow-muted italic">Keine passenden Einträge gefunden.</td></tr>';
+            } else {
+                tbody.innerHTML = filtered.map(([k, v]) => `
+                    <tr data-question="${escapeHtml(k)}" onclick="triggerKnowledgePrompt(this.getAttribute('data-question'))" class="hover:bg-flow-hover/70 cursor-pointer transition group" title="Klicken, um diese Frage direkt im Chat zu stellen">
+                        <td class="p-3.5 font-medium text-white break-words align-top">
+                            <span class="inline-flex items-center space-x-1.5 bg-blue-500/10 group-hover:bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded font-mono text-[11px] transition">
+                                <span>${escapeHtml(k)}</span>
+                                <i class="fa-solid fa-paper-plane text-[9px] opacity-60 group-hover:opacity-100"></i>
+                            </span>
+                        </td>
+                        <td class="p-3.5 text-flow-text break-words align-top">
+                            ${escapeHtml(String(v))}
+                        </td>
+                    </tr>
+                `).join("");
+            }
+
+            if (countLabel) {
+                countLabel.innerText = `${filtered.length} von ${entries.length} Einträgen angezeigt`;
+            }
+        }
+
+        function triggerKnowledgePrompt(questionText) {
+            if (!questionText) return;
+            closeKnowledgeTableModal();
+            quickPrompt(questionText);
+        }
+
+        window.openKnowledgeTableModal = openKnowledgeTableModal;
+        window.closeKnowledgeTableModal = closeKnowledgeTableModal;
+        window.filterKnowledgeTable = filterKnowledgeTable;
+        window.exportUpdatedScript = exportUpdatedScript;
+        window.renderKnowledgeTable = renderKnowledgeTable;
+        window.triggerKnowledgePrompt = triggerKnowledgePrompt;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            try {
+                const done = localStorage.getItem("flow_onboarding_done_v1");
+                if (done === "true") {
+                    const modal = document.getElementById("onboardingModal");
+                    if (modal) modal.classList.add("hidden");
+                }
+                const storedAccounts = localStorage.getItem("flow_saved_accounts_v1");
+                if (storedAccounts) {
+                    savedAccounts = { ...savedAccounts, ...JSON.parse(storedAccounts) };
+                }
+                const storedUser = localStorage.getItem("flow_current_user_v1");
+                if (storedUser) {
+                    currentUser = JSON.parse(storedUser);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            updateUserSidebar();
+            loadGlobalKnowledge();
+            updateKnowledgeBadge();
+            loadChatSessions();
+        });
+    </script>
+
+    <!-- SCHRITT 2: UPDATE 1 (flow_intelligenz_update.js) -->
+    <script>
+/* ===== FLOW INTELLIGENZ-UPDATE =====
+   Einfügen: in deiner HTML-Datei ganz unten, direkt über der letzten Script-Schlusszeile (kurz vor dem Ende der Datei).
+   Es wird nichts Bestehendes geändert – nur Wissen ergänzt und die Antwort-Suche schlauer gemacht. */
+(function () {
+  // ---------- 1) Viel mehr Wissen ----------
+  const K = [
+    // Smalltalk
+    ["wie heißt du|wie heisst du|dein name|wie ist dein name", "Ich heiße Flow – dein Flow AI Studio. 😊"],
+    ["wie alt bist du", "Ich wurde im November programmiert und lerne seitdem ständig dazu – ein klassisches Alter habe ich nicht."],
+    ["wer hat dich programmiert|wer hat dich gemacht|wer hat dich erschaffen|wer hat dich entwickelt", "Flow AI Studio wurde im November von Google Gemini programmiert."],
+    ["bist du ein mensch|bist du echt|bist du eine ki", "Ich bin eine KI – ein Programm, das mit gespeichertem Wissen antwortet und mit #learning dazulernt."],
+    ["was kannst du|was kannst du alles|wofür bist du gut", "Ich beantworte Wissensfragen (Geografie, Natur, Technik, Geschichte, Alltag), rechne Aufgaben und lerne mit #learning neue Dinge von dir."],
+    ["kannst du lernen|kannst du dazulernen|wie bringe ich dir etwas bei", "Ja! Schreibe #learning und danach Frage = Antwort – ich speichere es dauerhaft."],
+    ["wie gehts|wie gehts dir|na wie gehts", "Mir geht es super, danke! Und dir? 😊"],
+    ["moin|servus|grüezi|gruezi|hey|hallo flow|guten tag|grüß dich", "Hallo! 👋 Schön, dass du da bist. Was möchtest du wissen?"],
+    ["ciao|auf wiedersehen|bis bald|bis später|adieu", "Bis bald! 👋 Ich bin jederzeit hier, wenn du Fragen hast."],
+    ["vielen dank|dankeschön|danke schön|merci", "Sehr gerne! 😊 Sag Bescheid, wenn du noch etwas brauchst."],
+    ["entschuldigung|sorry", "Kein Problem – alles gut! 😊"],
+    ["mir ist langweilig|rätsel", "Ein Rätsel: Was hat Städte ohne Häuser, Flüsse ohne Wasser und Wälder ohne Bäume? – Eine Landkarte! 🗺️"],
+    ["motiviere mich", "Du schaffst das! Fang mit dem kleinsten ersten Schritt an – kleine Schritte bringen dich weiter als perfekte Pläne. 💪"],
+    ["fun fact|wusstest du|interessante fakten|erzähl mir etwas interessantes", "Wusstest du? Honig verdirbt praktisch nie – in altägyptischen Gräbern fand man über 3.000 Jahre alten, noch genießbaren Honig. 🍯"],
+    ["witz", "Warum können Geister so schlecht lügen? Weil man sie so leicht durchschaut! 👻"],
+    ["wie ist das wetter|wie wird das wetter|wetter heute", "Live-Wetter kenne ich als lokales Studio nicht – schau kurz in eine Wetter-App. ⛅"],
+    // Geschichte & Kultur
+    ["wann war der erste weltkrieg|erster weltkrieg", "Der Erste Weltkrieg dauerte von 1914 bis 1918."],
+    ["wann war der zweite weltkrieg|zweiter weltkrieg", "Der Zweite Weltkrieg dauerte von 1939 bis 1945."],
+    ["erster mensch im all|erster mensch im weltall", "Juri Gagarin war 1961 der erste Mensch im Weltall."],
+    ["wann wurde die schweiz gegründet|gründung der schweiz|nationalfeiertag schweiz", "Als Gründungsdatum der Schweiz gilt der 1. August 1291 (Bundesbrief) – darum ist der 1. August Nationalfeiertag. Der moderne Bundesstaat entstand 1848."],
+    ["wer entdeckte amerika|columbus|kolumbus", "Christoph Kolumbus erreichte 1492 Amerika (die Wikinger waren schon um das Jahr 1000 dort)."],
+    ["französische revolution", "Die Französische Revolution begann 1789 mit dem Sturm auf die Bastille."],
+    ["titanic", "Die Titanic sank in der Nacht vom 14. auf den 15. April 1912 nach der Kollision mit einem Eisberg."],
+    ["wer war napoleon", "Napoleon Bonaparte (1769–1821) war französischer Kaiser und Feldherr."],
+    ["wer war mozart", "Wolfgang Amadeus Mozart (1756–1791) war ein österreichischer Komponist der Klassik."],
+    ["wer war beethoven", "Ludwig van Beethoven (1770–1827) war ein deutscher Komponist, bekannt u. a. für die 9. Sinfonie."],
+    ["wer war leonardo da vinci|mona lisa", "Leonardo da Vinci (1452–1519) war Maler, Erfinder und Forscher – er malte die Mona Lisa."],
+    ["wer schrieb faust", "Faust wurde von Johann Wolfgang von Goethe geschrieben."],
+    ["wer schrieb wilhelm tell|wilhelm tell", "Das Schauspiel Wilhelm Tell schrieb Friedrich Schiller (1804). Tell selbst ist eine Sagenfigur der Schweiz."],
+    // Schweiz & Welt
+    ["kantone|wie viele kantone", "Die Schweiz hat 26 Kantone."],
+    ["landessprachen|sprachen schweiz", "Die Schweiz hat vier Landessprachen: Deutsch, Französisch, Italienisch und Rätoromanisch."],
+    ["währung schweiz|schweizer währung", "In der Schweiz zahlt man mit dem Schweizer Franken (CHF)."],
+    ["einwohner schweiz|wie viele einwohner hat die schweiz", "In der Schweiz leben rund 9 Millionen Menschen."],
+    ["größte stadt der schweiz", "Die grösste Stadt der Schweiz ist Zürich."],
+    ["matterhorn", "Das Matterhorn (4.478 m) steht im Wallis an der Grenze zu Italien."],
+    ["gotthard", "Der Gotthard-Basistunnel (57 km) ist der längste Eisenbahntunnel der Welt."],
+    ["größter see der schweiz", "Der Genfersee ist der grösste See, der an die Schweiz grenzt; der Neuenburgersee ist der grösste See, der ganz in der Schweiz liegt."],
+    ["bundesrat", "Der Schweizer Bundesrat ist die Regierung der Schweiz und besteht aus 7 Mitgliedern."],
+    ["größtes land der welt", "Russland ist mit rund 17,1 Millionen km² das flächenmäßig größte Land der Erde."],
+    ["kleinstes land der welt", "Die Vatikanstadt ist mit nur etwa 0,44 km² das kleinste Land der Welt."],
+    ["bevölkerungsreichstes land", "Indien ist (seit 2023) das bevölkerungsreichste Land der Erde, knapp vor China."],
+    ["wie viele länder gibt es", "Die UNO hat 193 Mitgliedstaaten."],
+    ["wie viele menschen leben auf der erde|weltbevölkerung", "Auf der Erde leben rund 8 Milliarden Menschen."],
+    ["tiefster punkt der erde", "Der tiefste Punkt der Ozeane ist der Marianengraben (Challengertief) mit rund 11.000 Metern Tiefe."],
+    ["höchster wasserfall", "Der Salto Ángel in Venezuela ist mit 979 Metern der höchste frei fallende Wasserfall der Welt."],
+    ["größte wüste", "Die Antarktis ist die größte Wüste der Erde; die größte Heißwüste ist die Sahara."],
+    ["längster fluss europas", "Die Wolga (ca. 3.500 km) ist der längste Fluss Europas."],
+    // Natur & Wissenschaft
+    ["kleinster planet", "Merkur ist der kleinste Planet unseres Sonnensystems."],
+    ["roter planet", "Der Mars heißt Roter Planet, weil rostfarbener Eisenoxid-Staub seine Oberfläche bedeckt."],
+    ["wie viele monde hat die erde", "Die Erde hat einen Mond."],
+    ["wie alt ist die erde", "Die Erde ist etwa 4,5 Milliarden Jahre alt."],
+    ["wie alt ist das universum", "Das Universum ist rund 13,8 Milliarden Jahre alt."],
+    ["was ist die sonne", "Die Sonne ist ein Stern – ein riesiger Gasball aus Wasserstoff und Helium, der die Erde mit Licht und Wärme versorgt."],
+    ["was ist ein schwarzes loch", "Ein Schwarzes Loch ist ein Bereich im All mit so starker Schwerkraft, dass nicht einmal Licht entkommen kann."],
+    ["was ist ein atom", "Ein Atom ist der kleinste Baustein eines chemischen Elements – es besteht aus Protonen, Neutronen und Elektronen."],
+    ["was ist dna", "DNA ist die Erbsubstanz: Sie trägt die Bauanleitung für Lebewesen und hat die Form einer Doppelhelix."],
+    ["was ist schwerkraft|was ist gravitation", "Schwerkraft ist die Anziehungskraft von Massen. Auf der Erde beschleunigt sie Körper mit etwa 9,81 m/s²."],
+    ["woraus besteht luft|zusammensetzung luft", "Luft besteht zu etwa 78 % aus Stickstoff, 21 % aus Sauerstoff und 1 % aus anderen Gasen (u. a. Argon und CO₂)."],
+    ["chemische formel wasser|formel wasser|h2o", "Die chemische Formel von Wasser ist H₂O: zwei Wasserstoff- und ein Sauerstoffatom."],
+    ["co2|kohlendioxid", "CO₂ (Kohlendioxid) ist ein farbloses Gas, das bei Atmung und Verbrennung entsteht; Pflanzen nehmen es für die Fotosynthese auf."],
+    ["was ist ein vulkan", "Ein Vulkan ist eine Öffnung in der Erdkruste, aus der Magma, Asche und Gase austreten können."],
+    ["was ist ein erdbeben", "Ein Erdbeben entsteht, wenn sich Spannungen zwischen Gesteinsplatten der Erdkruste plötzlich lösen."],
+    ["wie entsteht regen", "Wasser verdunstet, steigt auf, kühlt ab und bildet Wolken-Tröpfchen. Werden sie schwer genug, fallen sie als Regen."],
+    ["wie entsteht ein regenbogen", "Ein Regenbogen entsteht, wenn Sonnenlicht in Regentropfen gebrochen und gespiegelt wird und sich in seine Farben aufspaltet."],
+    ["regenbogenfarben|farben des regenbogens", "Rot, Orange, Gelb, Grün, Blau, Indigo, Violett."],
+    ["blau und gelb|gelb und blau", "Blau und Gelb ergeben Grün."],
+    ["primärfarben|grundfarben", "Beim Malen sind die Grundfarben Rot, Gelb und Blau; bei Licht (Bildschirm) Rot, Grün und Blau."],
+    ["wie viele elemente gibt es|periodensystem", "Das Periodensystem enthält 118 bekannte chemische Elemente."],
+    ["was ist strom|was ist elektrizität", "Strom ist der Fluss elektrischer Ladung (meist Elektronen) durch einen Leiter. Er wird in Ampere gemessen."],
+    ["wie funktioniert ein flugzeug", "Die gewölbten Tragflächen erzeugen Auftrieb, wenn Luft schnell darüberströmt; die Triebwerke liefern den nötigen Schub."],
+    // Körper & Tiere
+    ["wie viele zähne", "Erwachsene haben 32 Zähne (mit Weisheitszähnen), Kinder 20 Milchzähne."],
+    ["wie viele muskeln", "Der Mensch hat über 600 Skelettmuskeln."],
+    ["herzschlag|ruhepuls", "Der Ruhepuls eines Erwachsenen liegt meist bei 60 bis 100 Schlägen pro Minute."],
+    ["blutgruppen|blutgruppe", "Es gibt die Blutgruppen A, B, AB und 0 – jeweils Rhesus-positiv oder -negativ."],
+    ["wie viel blut hat der mensch|wie viel liter blut", "Ein Erwachsener hat etwa 4,5 bis 6 Liter Blut."],
+    ["körpertemperatur|normale körpertemperatur", "Die normale Körpertemperatur liegt bei etwa 36,5 bis 37,5 °C. Ab 38 °C spricht man von Fieber."],
+    ["wie viele chromosomen", "Der Mensch hat 46 Chromosomen (23 Paare)."],
+    ["wie viel schlaf|wie lange schlafen", "Erwachsene brauchen meist 7 bis 9 Stunden Schlaf pro Nacht, Kinder und Jugendliche mehr."],
+    ["wie viele beine hat eine spinne|beine spinne", "Spinnen haben 8 Beine, Insekten dagegen 6."],
+    ["größter vogel", "Der Strauß ist der größte und schwerste lebende Vogel."],
+    ["kleinster vogel", "Die Bienenelfe (eine Kolibri-Art aus Kuba) ist der kleinste Vogel der Welt."],
+    ["höchstes tier", "Die Giraffe ist das höchste Landtier – bis zu 5,5 Meter."],
+    ["schnellster vogel", "Der Wanderfalke ist im Sturzflug mit über 300 km/h das schnellste Tier der Welt."],
+    ["was fressen pandas", "Große Pandas fressen fast ausschließlich Bambus – oft über 10 kg am Tag."],
+    // Mathe & Einheiten
+    ["was ist eine primzahl|primzahlen", "Eine Primzahl ist eine natürliche Zahl größer als 1, die nur durch 1 und sich selbst teilbar ist: 2, 3, 5, 7, 11, 13, 17, 19, 23 …"],
+    ["satz des pythagoras|pythagoras", "Im rechtwinkligen Dreieck gilt: a² + b² = c² (c ist die Hypotenuse)."],
+    ["fläche kreis|kreisfläche|fläche eines kreises", "Kreisfläche: A = π · r²"],
+    ["umfang kreis|kreisumfang|umfang eines kreises", "Kreisumfang: U = 2 · π · r"],
+    ["fläche rechteck|fläche eines rechtecks", "Fläche eines Rechtecks: A = Länge · Breite"],
+    ["fläche dreieck|fläche eines dreiecks", "Fläche eines Dreiecks: A = Grundseite · Höhe ÷ 2"],
+    ["volumen würfel|volumen eines würfels", "Volumen eines Würfels: V = a · a · a = a³"],
+    ["winkelsumme dreieck|winkelsumme im dreieck", "Die Winkelsumme im Dreieck beträgt 180°."],
+    ["wie viel grad hat ein kreis|grad kreis", "Ein Vollkreis hat 360°."],
+    ["was ist ein prozent|was ist prozent", "Prozent heißt ‚von Hundert‘: 1 % ist ein Hundertstel. Rechnung: Wert ÷ 100 × Prozentzahl."],
+    ["was ist ein dutzend", "Ein Dutzend sind 12 Stück."],
+    ["was ist eine quadratzahl", "Eine Quadratzahl entsteht, wenn man eine ganze Zahl mit sich selbst multipliziert: 1, 4, 9, 16, 25, 36 …"],
+    ["wie viele minuten hat eine stunde", "Eine Stunde hat 60 Minuten (= 3.600 Sekunden)."],
+    ["wie viele tage hat ein jahr", "Ein Jahr hat 365 Tage, ein Schaltjahr 366."],
+    ["wie viele wochen hat ein jahr", "Ein Jahr hat 52 Wochen (plus 1–2 Tage)."],
+    ["wie viele monate hat ein jahr", "Ein Jahr hat 12 Monate."],
+    ["wie viele tage hat der februar", "Der Februar hat 28 Tage, im Schaltjahr 29."],
+    ["wochentage|wie viele tage hat eine woche", "Die 7 Wochentage: Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag."],
+    ["jahreszeiten", "Die vier Jahreszeiten: Frühling, Sommer, Herbst und Winter."],
+    ["wie viele meter hat ein kilometer", "1 Kilometer = 1.000 Meter."],
+    ["wie viele gramm hat ein kilogramm", "1 Kilogramm = 1.000 Gramm."],
+    ["wie viele milliliter hat ein liter", "1 Liter = 1.000 Milliliter."],
+    ["wie viele zentimeter hat ein meter", "1 Meter = 100 Zentimeter."],
+    ["was ist eine meile", "Eine (Land-)Meile ist etwa 1,609 Kilometer."],
+    ["celsius in fahrenheit", "Fahrenheit = Celsius × 1,8 + 32 (z. B. 20 °C = 68 °F)."],
+    // Technik & Programmierung
+    ["was ist ein computer", "Ein Computer ist eine Maschine, die Daten nach Anweisungen (Programmen) verarbeitet."],
+    ["was ist ein algorithmus", "Ein Algorithmus ist eine Schritt-für-Schritt-Anleitung zur Lösung eines Problems – wie ein Kochrezept."],
+    ["was ist eine datenbank", "Eine Datenbank speichert Daten geordnet, sodass man sie schnell finden, ändern und auswerten kann."],
+    ["was ist ein betriebssystem", "Ein Betriebssystem (z. B. Windows, macOS, Linux, Android) verwaltet Hardware und Programme eines Geräts."],
+    ["was ist wlan", "WLAN ist ein drahtloses Funknetz, über das Geräte ins lokale Netzwerk und ins Internet kommen."],
+    ["was ist ein browser", "Ein Browser (z. B. Chrome, Firefox, Safari) ist ein Programm, mit dem man Webseiten anzeigt."],
+    ["was ist eine api", "Eine API ist eine Schnittstelle, über die Programme miteinander sprechen und Daten austauschen."],
+    ["was ist git", "Git ist eine Versionsverwaltung: Es speichert jeden Stand deines Codes, sodass man Änderungen nachverfolgen und zurückholen kann."],
+    ["was ist linux", "Linux ist ein freies Betriebssystem(-Kern), das auf Servern, Smartphones (Android) und PCs läuft."],
+    ["was ist ein byte", "Ein Byte besteht aus 8 Bit. Ein Kilobyte sind je nach Konvention 1.000 oder 1.024 Byte."],
+    ["was ist ein pixel", "Ein Pixel ist der kleinste Bildpunkt auf einem Bildschirm oder in einem digitalen Bild."],
+    ["was ist ein server", "Ein Server ist ein Computer, der anderen Geräten (Clients) Daten oder Dienste bereitstellt, z. B. Webseiten."],
+    ["was ist die cloud|was ist cloud", "Die Cloud bedeutet: Daten und Programme liegen auf Servern im Internet statt nur auf deinem eigenen Gerät."],
+    ["was ist http|was ist https", "HTTP ist das Protokoll, mit dem Browser Webseiten laden. HTTPS ist die verschlüsselte, sichere Variante."],
+    ["was ist json", "JSON ist ein einfaches Textformat für Daten, z. B. {'name': 'Flow'}. Es wird in Web-Apps sehr oft genutzt."],
+    ["was ist phishing", "Phishing sind Betrugsversuche per E-Mail oder SMS, die Passwörter oder Daten stehlen wollen. Klicke nie auf verdächtige Links."],
+    ["sicheres passwort|wie erstelle ich ein sicheres passwort", "Ein sicheres Passwort ist lang (12+ Zeichen), mischt Buchstaben, Zahlen und Sonderzeichen und wird nie für mehrere Konten verwendet."],
+    ["was ist eine funktion", "In der Programmierung ist eine Funktion ein benannter Codeblock, den man mit Eingaben aufrufen kann und der ein Ergebnis liefert."],
+    ["was ist ein array|was ist eine liste", "Ein Array (Liste) speichert mehrere Werte in fester Reihenfolge, z. B. [1, 2, 3]."],
+    ["was ist eine bedingung", "Eine Bedingung (if) führt Code nur aus, wenn etwas wahr ist, z. B. if (alter >= 18) { … }."],
+    ["hallo welt python|hello world python", "In Python gibst du Text so aus: print('Hallo Welt')"],
+    ["hallo welt javascript|hello world javascript", "In JavaScript: console.log('Hallo Welt');"],
+    ["was ist ein neuronales netz|neuronales netz|neuronale netze", "Ein neuronales Netz ist ein KI-Modell aus vielen verbundenen ‚Neuronen‘, das Muster in Daten erkennt."],
+    // Alltag, Gesundheit, Geld, Sport, Musik, Sprachen
+    ["notruf|notrufnummer|notrufnummern", "Notrufe Schweiz: 112 (Europa-Notruf), 117 Polizei, 118 Feuerwehr, 144 Sanität/Ambulanz, 1414 Rega. Bei Gefahr sofort anrufen!"],
+    ["wie koche ich reis", "Reis (1 Teil) mit 2 Teilen Wasser und etwas Salz aufkochen, dann zugedeckt bei kleiner Hitze ca. 12–15 Minuten quellen lassen."],
+    ["wie koche ich nudeln|wie lange kochen nudeln", "Nudeln in reichlich Salzwasser je nach Sorte 8–12 Minuten kochen (al dente) und abgießen."],
+    ["hartgekochtes ei|hartes ei", "Ein hartgekochtes Ei braucht in kochendem Wasser etwa 8 bis 10 Minuten."],
+    ["wie lange kocht man kartoffeln|kartoffeln kochen", "Kartoffelstücke brauchen etwa 15–20 Minuten, ganze Pellkartoffeln 20–30 Minuten."],
+    ["wie viele schritte pro tag", "Als Faustregel gelten 7.000 bis 10.000 Schritte pro Tag als gut für die Gesundheit."],
+    ["was ist gesund|gesunde ernährung", "Gesund sind eine ausgewogene Ernährung mit viel Gemüse und Obst, genug Wasser, regelmäßige Bewegung und ausreichend Schlaf."],
+    ["was ist inflation", "Inflation bedeutet, dass Preise allgemein steigen und das Geld dadurch an Kaufkraft verliert."],
+    ["was ist eine aktie", "Eine Aktie ist ein Anteil an einem Unternehmen. Ihr Wert schwankt – es gibt Chancen, aber auch Verlustrisiken."],
+    ["was ist zinseszins", "Beim Zinseszins werden Zinsen mitverzinst: Du bekommst auch auf bereits erhaltene Zinsen wieder Zinsen."],
+    ["was ist ein budget", "Ein Budget ist ein Plan, wie viel Geld du in einer Zeit einnimmst und wofür du es ausgibst."],
+    ["was ist bruttoinlandsprodukt|was ist das bip", "Das BIP misst den Wert aller Waren und Dienstleistungen, die ein Land in einem Jahr herstellt."],
+    ["wie viele spieler im fussball|wie viele spieler im fußball", "Beim Fussball spielen pro Team 11 Spieler. Ein Spiel dauert 2 × 45 Minuten plus Nachspielzeit."],
+    ["wie viele spieler im basketball", "Beim Basketball stehen pro Team 5 Spieler auf dem Feld."],
+    ["wie viele tasten hat ein klavier", "Ein Klavier hat 88 Tasten (52 weisse und 36 schwarze)."],
+    ["wie viele saiten hat eine gitarre", "Eine Standard-Gitarre hat 6 Saiten."],
+    ["hallo auf englisch|hallo auf französisch|hallo auf italienisch|hallo auf spanisch|hallo in anderen sprachen|danke auf englisch|danke auf französisch|danke auf italienisch|danke auf spanisch", "Hallo: Hello (EN) · Bonjour (FR) · Ciao/Buongiorno (IT) · Hola (ES) · Olá (PT) · Merhaba (TR). Danke: Thank you (EN) · Merci (FR) · Grazie (IT) · Gracias (ES) · Obrigado (PT) · Teşekkürler (TR)."],
+    ["wie viele sprachen gibt es", "Es gibt weltweit rund 7.000 Sprachen."],
+    ["meistgesprochene sprache", "Mandarin-Chinesisch hat die meisten Muttersprachler; Englisch wird insgesamt weltweit am häufigsten gesprochen."]
+  ];
+  K.forEach(([ks, a]) => ks.split('|').forEach(k => { if (!(k in learnedKnowledge)) learnedKnowledge[k] = a; }));
+
+  // Hauptstädte (je 3 Frageformen)
+  ('kanada=Ottawa,australien=Canberra,brasilien=Brasília,china=Peking,russland=Moskau,indien=Neu-Delhi,ägypten=Kairo,türkei=Ankara,portugal=Lissabon,griechenland=Athen,polen=Warschau,schweden=Stockholm,norwegen=Oslo,dänemark=Kopenhagen,finnland=Helsinki,niederlande=Amsterdam (Regierungssitz ist Den Haag),belgien=Brüssel,großbritannien=London,england=London,mexiko=Mexiko-Stadt,argentinien=Buenos Aires,südkorea=Seoul,liechtenstein=Vaduz,tschechien=Prag,ungarn=Budapest,irland=Dublin,ukraine=Kiew,kroatien=Zagreb,slowenien=Ljubljana,slowakei=Bratislava,rumänien=Bukarest,bulgarien=Sofia,serbien=Belgrad,island=Reykjavik,luxemburg=Luxemburg,marokko=Rabat,kenia=Nairobi,thailand=Bangkok,vietnam=Hanoi,indonesien=Jakarta,peru=Lima,chile=Santiago de Chile,kolumbien=Bogotá,kuba=Havanna,neuseeland=Wellington,pakistan=Islamabad,iran=Teheran,südafrika=Pretoria (Regierungssitz) – Kapstadt (Parlament) – Bloemfontein (Justiz)')
+    .split(',').forEach(p => {
+      const [l, c] = p.split('=');
+      const a = 'Die Hauptstadt von ' + l.charAt(0).toUpperCase() + l.slice(1) + ' ist ' + c + '.';
+      ['hauptstadt von ' + l, 'hauptstadt ' + l, 'hauptstadt der ' + l].forEach(k => { if (!(k in learnedKnowledge)) learnedKnowledge[k] = a; });
+    });
+
+  // ---------- 2) Schlauere Antwort-Suche ----------
+  const STOP = new Set('der die das den dem des ein eine einen einem einer ist sind war was wie wer wo wann warum wieso welche welcher welches und oder von vom zu zum zur in im am an auf mit bei für über hat haben kann man mir mich dir du ich es bitte mal erkläre erzähl sag nenne gibt heißt bedeutet eigentlich denn noch auch so sich nicht kein viele viel'.split(' '));
+  const words = s => s.split(' ').filter(w => w.length > 2 && !STOP.has(w));
+
+  function smartLookup(q) {
+    const E = Object.entries(learnedKnowledge).map(([k, v]) => [normalizePromptText(k), v]).filter(([k]) => k);
+    for (const [k, v] of E) if (k === q) return v;                       // 1) exakter Treffer
+    const p = ' ' + q + ' ';
+    let best = 0, ans = null;
+    for (const [k, v] of E) if (k.length >= 2 && p.includes(' ' + k + ' ') && k.length > best) { best = k.length; ans = v; } // 2) ganze Wörter/Phrasen
+    if (ans !== null) return ans;
+    for (const [k, v] of E) if (k.length >= 6 && q.includes(k) && k.length > best) { best = k.length; ans = v; }            // 3) lange Schlüssel (Teilwort)
+    if (ans !== null) return ans;
+    const qw = new Set(words(q));                                         // 4) Stichwort-Überlappung (umformulierte Fragen)
+    let bs = 0;
+    for (const [k, v] of E) {
+      const kw = words(k);
+      if (kw.length < 2) continue;
+      const hit = kw.filter(w => qw.has(w)).length, sc = hit / kw.length;
+      if (hit >= 2 && sc >= 0.67 && sc + hit / 100 > bs) { bs = sc + hit / 100; ans = v; }
+    }
+    return ans;
+  }
+
+  // Zusatz-Mathe: Wurzel, Prozent, Quadrat (Rest übernimmt dein evaluateMath)
+  function smartMath(query) {
+    const t = query.toLowerCase().trim().replace(/^(was ist|berechne|rechne)\s+/, '').replace(/[?!]+$/, '').replace(/^die\s+/, '').replace(/(?<=\d),(?=\d)/g, '.');
+    let m, r;
+    if ((m = t.match(/^wurzel (?:aus|von) ([0-9.]+)$/))) r = Math.sqrt(parseFloat(m[1]));
+    else if ((m = t.match(/^([0-9.]+) ?(?:prozent|%) von ([0-9.]+)$/))) r = parseFloat(m[1]) * parseFloat(m[2]) / 100;
+    else if ((m = t.match(/^(?:das )?quadrat von ([0-9.]+)$/))) r = Math.pow(parseFloat(m[1]), 2);
+    return r !== undefined ? +r.toFixed(8) : evaluateMath(query);
+  }
+
+  const flowOrig = processFlowEngineResponse;
+  processFlowEngineResponse = function (query) {
+    const lower = query.trim().toLowerCase();
+    if (awaitingLearningInput || lower.startsWith('#')) return flowOrig(query); // #learning bleibt wie gehabt
+    try { const s = localStorage.getItem('flow_global_knowledge_v3'); if (s) learnedKnowledge = { ...learnedKnowledge, ...JSON.parse(s) }; } catch (e) {}
+    let answer = smartLookup(normalizePromptText(query));
+    if (answer === null) {
+      try { answer = 'Ergebnis: ' + smartMath(query); }
+      catch (e) { answer = 'Dies weiß ich noch nicht, aber du kannst mich lernen mit #learning'; }
+    }
+    if (!isNormalMode && (currentUser.age || 25) < 13) answer = 'Hey! 😊 ' + answer;
+    finishResponseCycle(query, answer);
+  };
+  if (typeof updateKnowledgeBadge === 'function') updateKnowledgeBadge();
+})();
+    </script>
+
+<script>
+(function () {
+  const P = [
+    // Schweizer Mundart & Alltag
+    ["znüni|was ist znüni", "Znüni ist die kleine Zwischenmahlzeit am Vormittag (um 9 Uhr)."],
+    ["zvieri|was ist zvieri", "Zvieri ist der Schweizer Nachmittagssnack (um 4 Uhr)."],
+    ["velo|was ist ein velo", "Velo ist das Schweizer Wort für Fahrrad."],
+    ["glace|was ist glace", "Glacé ist das Schweizer Wort für Speiseeis."],
+    ["trottoir", "Trottoir bedeutet in der Schweiz Gehsteig bzw. Bürgersteig."],
+    ["billett", "Billett ist in der Schweiz die Fahrkarte oder Eintrittskarte."],
+    ["uf wiederluege|uf wiederschauen", "‚Uf Wiederluege‘ heißt auf Schweizerdeutsch ‚Auf Wiedersehen‘."],
+    ["chuchichäschtli", "Chuchichäschtli heißt Küchenschrank und gilt als Zungenbrecher für Nicht-Schweizer."],
+    ["notensystem schweiz|noten schweiz", "In der Schweizer Schule ist 6 die beste und 1 die schlechteste Note; ab 4 ist es genügend."],
+    ["tempolimit schweiz|höchstgeschwindigkeit schweiz", "In der Schweiz gelten allgemein: innerorts 50 km/h, ausserorts 80 km/h, auf Autostrassen 100 km/h und auf Autobahnen 120 km/h (Schilder gehen vor)."],
+    ["promillegrenze schweiz|alkohol am steuer schweiz", "In der Schweiz liegt die Promillegrenze am Steuer bei 0,5 ‰. Für Neulenker, Lernfahrer und Berufschauffeure gilt ein Alkoholverbot (0,1 ‰)."],
+    ["führerschein schweiz|ab wann autofahren schweiz", "In der Schweiz gibt es den Lernfahrausweis ab 17 Jahren; den Führerausweis für Autos (Kategorie B) bekommt man ab 18, zuerst auf Probe für 3 Jahre."],
+    ["krankenkasse schweiz|krankenversicherung schweiz", "In der Schweiz ist die Grundversicherung bei einer Krankenkasse für alle Einwohner obligatorisch; Kasse, Franchise und Versicherungsmodell wählt man selbst."],
+    ["was ist die ahv|ahv", "Die AHV ist die Alters- und Hinterlassenenversicherung – die staatliche Rente der Schweiz (1. Säule)."],
+    ["drei säulen schweiz|3 säulen", "Die Schweizer Altersvorsorge hat 3 Säulen: 1. AHV/IV (staatlich), 2. Pensionskasse (beruflich), 3. private Vorsorge (z. B. Säule 3a)."],
+    ["was ist eine volksinitiative", "Mit einer Volksinitiative können 100.000 Stimmberechtigte innerhalb von 18 Monaten eine Änderung der Bundesverfassung verlangen; dann stimmt das Volk ab."],
+    ["was ist ein referendum|referendum schweiz", "Mit einem Referendum können 50.000 Stimmberechtigte (innert 100 Tagen) verlangen, dass über ein vom Parlament beschlossenes Gesetz abgestimmt wird."],
+    ["neutralität schweiz|ist die schweiz neutral", "Die Schweiz ist dauernd neutral (international anerkannt seit 1815): Sie beteiligt sich nicht an Kriegen anderer Staaten."],
+    ["was ist das rote kreuz|henry dunant", "Das Rote Kreuz wurde 1863 vom Schweizer Henry Dunant in Genf mitgegründet; es hilft Verwundeten sowie Opfern von Konflikten und Katastrophen."],
+    ["was ist cern|cern", "CERN bei Genf ist das größte Teilchenphysik-Forschungszentrum der Welt – dort steht der Large Hadron Collider und dort entstand das World Wide Web."],
+    ["was ist die who", "Die WHO (Weltgesundheitsorganisation) ist die UNO-Organisation für Gesundheit, mit Sitz in Genf."],
+    ["nobelpreis|welche nobelpreise gibt es", "Der Nobelpreis wird für Physik, Chemie, Medizin, Literatur und Frieden vergeben, dazu kommt der Wirtschaftspreis. Verliehen wird er seit 1901."],
+    // Redewendungen
+    ["daumen drücken|was bedeutet daumen drücken", "‚Jemandem die Daumen drücken‘ heißt, ihm viel Glück zu wünschen."],
+    ["tomaten auf den augen|tomaten auf den augen haben", "‚Tomaten auf den Augen haben‘ bedeutet, etwas Offensichtliches nicht zu bemerken."],
+    ["da steppt der bär", "‚Da steppt der Bär‘ heißt: Dort ist richtig viel los, die Stimmung ist ausgelassen."],
+    ["ins gras beissen|ins gras beißen", "‚Ins Gras beißen‘ ist eine umgangssprachliche Redewendung für ‚sterben‘."],
+    ["das ist mir wurst|mir ist wurst", "‚Das ist mir Wurst‘ bedeutet: Es ist mir egal."],
+    ["nur bahnhof verstehen|ich verstehe nur bahnhof", "‚Ich verstehe nur Bahnhof‘ heißt: Ich verstehe überhaupt nichts davon."],
+    ["nagel auf den kopf|den nagel auf den kopf treffen", "‚Den Nagel auf den Kopf treffen‘ bedeutet, genau das Richtige zu sagen oder zu tun."],
+    ["durch die blume sagen|durch die blume", "‚Durch die Blume sagen‘ heißt, etwas nur andeutend und höflich verpackt auszudrücken."],
+    ["schwein haben", "‚Schwein haben‘ heißt, unverdientes oder unerwartetes Glück zu haben."],
+    ["bären aufbinden|einen bären aufbinden", "‚Jemandem einen Bären aufbinden‘ bedeutet, ihm eine Lügengeschichte zu erzählen."],
+    ["hals und beinbruch", "‚Hals- und Beinbruch!‘ ist ein Glückwunsch vor einer Prüfung oder Aufführung."],
+    ["die kirche im dorf lassen|kirche im dorf", "‚Die Kirche im Dorf lassen‘ heißt, nicht zu übertreiben und sachlich zu bleiben."],
+    // KI, Computer & Internet
+    ["was ist ein prompt", "Ein Prompt ist die Anweisung oder Frage, die du einer KI gibst. Je klarer und genauer, desto besser die Antwort."],
+    ["was ist ein chatbot", "Ein Chatbot ist ein Programm, das sich per Text oder Sprache mit Menschen unterhält – wie ich."],
+    ["was ist ein llm|was ist ein sprachmodell", "Ein LLM (Large Language Model) ist ein KI-Sprachmodell, das mit riesigen Textmengen trainiert wurde und Text verstehen und erzeugen kann."],
+    ["wie wird eine ki trainiert|was ist training bei ki", "Beim Training bekommt eine KI sehr viele Beispiele und passt ihre inneren Zahlenwerte (Parameter) so an, dass sie Muster erkennt."],
+    ["was ist ein datensatz", "Ein Datensatz ist eine geordnete Sammlung von Daten, z. B. eine Tabelle mit Zeilen und Spalten."],
+    ["was ist spam", "Spam sind unerwünschte Massen-E-Mails oder -Nachrichten, oft Werbung oder Betrug."],
+    ["was ist ein download|was ist ein upload", "Download = Daten aus dem Internet auf dein Gerät laden; Upload = Daten von deinem Gerät ins Internet hochladen."],
+    ["was ist streaming", "Beim Streaming werden Musik oder Videos direkt aus dem Internet abgespielt, ohne sie vorher komplett herunterzuladen."],
+    ["was ist ein backup", "Ein Backup ist eine Sicherungskopie deiner Daten, damit nichts verloren geht, falls ein Gerät ausfällt."],
+    ["was ist ein update", "Ein Update ist eine neuere Version eines Programms oder Systems – oft mit Fehlerbehebungen, neuen Funktionen und Sicherheitsverbesserungen."],
+    ["was ist eine ssd|was ist eine festplatte", "Eine Festplatte (HDD) speichert Daten magnetisch, eine SSD in Speicherchips – SSDs sind deutlich schneller."],
+    ["was ist eine gpu|was ist eine grafikkarte", "Die GPU (Grafikprozessor) berechnet Bilder und Grafik und eignet sich auch sehr gut für KI-Berechnungen."],
+    ["tastenkürzel|tastenkombinationen", "Wichtige Tastenkürzel: Strg+C kopieren, Strg+V einfügen, Strg+X ausschneiden, Strg+Z rückgängig, Strg+A alles markieren, Strg+S speichern (auf dem Mac: Cmd statt Strg)."],
+    ["was ist sql", "SQL ist eine Sprache, um Daten in Datenbanken abzufragen und zu ändern, z. B. `SELECT * FROM kunden;`"],
+    ["programmiersprachen|was ist java", "Bekannte Programmiersprachen: Python (einfach, vielseitig), JavaScript (Webseiten), Java (Apps, Firmensoftware), C++ (schnell, Spiele), Rust (sicher und schnell), Swift (Apple-Apps), SQL (Datenbanken)."],
+    ["was ist scratch", "Scratch ist eine kostenlose visuelle Programmiersprache vom MIT, mit der man per Klötzchen-Bausteine programmieren lernt."],
+    ["was ist malware", "Malware ist Schadsoftware (z. B. Viren, Trojaner, Erpressersoftware). Schutz: Updates installieren, Antivirenprogramm nutzen und keine unbekannten Anhänge öffnen."],
+    ["was ist eine e mail|was ist e mail", "Eine E-Mail ist eine elektronische Nachricht, die über das Internet an eine Adresse wie name@beispiel.ch verschickt wird."],
+    ["was ist ein hashtag", "Ein Hashtag (#) markiert ein Thema in sozialen Medien, damit Beiträge dazu leichter gefunden werden."],
+    // Mathe & Physik
+    ["ohmsches gesetz", "Das Ohmsche Gesetz lautet U = R · I (Spannung = Widerstand · Stromstärke)."],
+    ["geschwindigkeit formel|wie berechnet man geschwindigkeit", "Geschwindigkeit v = Strecke s ÷ Zeit t. Beispiel: 120 km in 2 Stunden = 60 km/h."],
+    ["dichte formel|was ist dichte", "Dichte = Masse ÷ Volumen (ρ = m / V). Wasser hat eine Dichte von etwa 1 g/cm³."],
+    ["kraft formel", "Kraft F = Masse m · Beschleunigung a (gemessen in Newton)."],
+    ["absoluter nullpunkt", "Der absolute Nullpunkt liegt bei −273,15 °C (0 Kelvin) – kälter geht es nicht."],
+    ["was ist ein lichtjahr", "Ein Lichtjahr ist die Strecke, die Licht in einem Jahr zurücklegt – rund 9,46 Billionen Kilometer."],
+    ["teilbarkeitsregeln|wann ist eine zahl durch 3 teilbar", "Durch 2 teilbar: letzte Ziffer gerade. Durch 3: Quersumme durch 3 teilbar. Durch 5: endet auf 0 oder 5. Durch 9: Quersumme durch 9 teilbar. Durch 10: endet auf 0."],
+    ["kugelvolumen|volumen kugel", "Kugelvolumen: V = 4/3 · π · r³"],
+    ["zylindervolumen|volumen zylinder", "Zylindervolumen: V = π · r² · h"],
+    ["wahrscheinlichkeit würfel|wie wahrscheinlich ist eine sechs", "Bei einem fairen Würfel hat jede Zahl die Wahrscheinlichkeit 1/6 (rund 16,7 %); bei einer Münze ist es 1/2 für Kopf oder Zahl."],
+    ["fibonacci|fibonacci zahlen", "Die Fibonacci-Folge: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 … – jede Zahl ist die Summe der beiden davor."],
+    ["binärsystem|was ist binär|binärzahlen", "Im Binärsystem gibt es nur 0 und 1. Beispiele: 101 (binär) = 5, 1010 = 10. Computer rechnen intern binär."],
+    ["zinsformel|wie berechnet man zinsen", "Zinsen = Kapital · Zinssatz · Jahre ÷ 100 (Zinssatz in %). Beispiel: 1.000 Fr. · 2 % · 1 Jahr = 20 Fr."],
+    ["prozentrechnung formel|wie berechnet man prozent", "Prozentwert = Grundwert · Prozentsatz ÷ 100. Beispiel: 20 % von 150 = 150 · 20 ÷ 100 = 30."],
+    ["primfaktorzerlegung|was ist ein primfaktor", "Bei der Primfaktorzerlegung schreibt man eine Zahl als Produkt von Primzahlen, z. B. 12 = 2 · 2 · 3."],
+    ["goldener schnitt", "Der Goldene Schnitt ist ein Teilungsverhältnis von etwa 1 : 1,618 – es gilt als besonders harmonisch und kommt in Kunst und Natur vor."],
+    // Tiere & Natur
+    ["tausendfüßler|welches tier hat die meisten beine", "Tausendfüßer haben je nach Art bis über 700 Beine – tausend erreichen sie aber nicht ganz."],
+    ["wie alt werden schildkröten|wie lange leben schildkröten", "Große Landschildkröten können über 100 Jahre alt werden."],
+    ["haie|wie viele arten von haien gibt es", "Es gibt rund 500 Haiarten – viele sind für Menschen harmlos; der Walhai ist der größte Fisch der Welt."],
+    ["schnellster mensch|wie schnell ist ein mensch", "Im Sprint erreichen Spitzenläufer über 40 km/h – Usain Bolts Weltrekord über 100 m liegt bei 9,58 Sekunden."],
+    ["was ist ein zugvogel|wohin fliegen zugvögel", "Zugvögel fliegen im Herbst in wärmere Regionen (z. B. nach Afrika) und kehren im Frühling zurück, weil sie dort mehr Nahrung finden."],
+    ["wie schlafen delfine", "Delfine schlafen mit jeweils nur einer Gehirnhälfte; die andere bleibt wach, damit sie weiter auftauchen und atmen können."],
+    ["wie viele augen hat eine biene|bienen", "Bienen haben 5 Augen: 2 große Facettenaugen und 3 kleine Punktaugen."],
+    ["abendrot|warum ist der himmel rot bei sonnenuntergang", "Bei tief stehender Sonne ist der Lichtweg durch die Atmosphäre lang; das blaue Licht wird weggestreut und das rote bleibt übrig."],
+    ["was ist ein ökosystem", "Ein Ökosystem ist das Zusammenspiel aller Lebewesen und ihrer Umgebung in einem Lebensraum, z. B. Wald, See oder Korallenriff."],
+    ["was ist der wasserkreislauf", "Im Wasserkreislauf verdunstet Wasser, steigt auf, bildet Wolken, fällt als Regen oder Schnee und fließt über Flüsse zurück ins Meer."],
+    ["warum gibt es jahreszeiten", "Die Jahreszeiten entstehen, weil die Erdachse schräg (23,4°) steht: Je nach Stellung zur Sonne fällt das Licht steiler oder flacher auf eine Halbkugel."],
+    ["was ist ebbe und flut|gezeiten", "Ebbe und Flut (Gezeiten) entstehen vor allem durch die Anziehungskraft des Mondes auf das Meerwasser."],
+    // Essen & Ernährung
+    ["carbonara|wie macht man spaghetti carbonara", "Echte Carbonara: Spaghetti kochen, Guanciale oder Speck knusprig braten, Eigelb mit Pecorino mischen und alles abseits der Hitze vermengen – ohne Rahm."],
+    ["was ist ein risotto|risotto", "Risotto ist ein cremiges italienisches Reisgericht aus Rundkornreis, der langsam unter Rühren mit Brühe gekocht wird."],
+    ["unterschied butter und margarine", "Butter wird aus Milchrahm gemacht, Margarine aus pflanzlichen Ölen und Fetten."],
+    ["was ist gluten", "Gluten ist ein Klebereiweiß in Weizen, Roggen und Gerste. Menschen mit Zöliakie müssen es komplett meiden."],
+    ["wie lange hält sich ein ei|eier haltbarkeit", "Gekühlte Eier sind meist mehrere Wochen haltbar. Wassertest: Ein frisches Ei sinkt im Wasserglas, ein altes schwimmt auf."],
+    ["was ist sushi", "Sushi ist ein japanisches Gericht aus gesäuertem Reis, meist mit rohem Fisch, Gemüse oder Ei, oft in Algenblätter (Nori) gerollt."],
+    ["obst und gemüse am tag|five a day", "Empfohlen sind täglich etwa 5 Portionen Obst und Gemüse (3 Gemüse, 2 Obst)."],
+    // Geografie
+    ["rhein|wie lang ist der rhein", "Der Rhein (rund 1.230 km) ist einer der längsten Flüsse Europas; er entspringt in den Schweizer Alpen und mündet in die Nordsee."],
+    ["donau|wie lang ist die donau", "Die Donau (rund 2.850 km) ist nach der Wolga der zweitlängste Fluss Europas und fließt durch 10 Länder bis ins Schwarze Meer."],
+    ["höchster berg europas|mont blanc|elbrus", "Der Elbrus im Kaukasus (5.642 m) gilt als höchster Berg Europas; der Mont Blanc (4.806 m) ist der höchste Berg der Alpen."],
+    ["zweithöchster berg der welt|k2", "Der K2 (8.611 m) im Karakorum ist der zweithöchste Berg der Welt."],
+    ["größte insel der welt|grönland", "Grönland ist mit rund 2,17 Mio. km² die größte Insel der Welt (Australien gilt als Kontinent)."],
+    ["größter see der welt|kaspisches meer", "Das Kaspische Meer ist mit rund 371.000 km² der größte See der Erde."],
+    ["tiefster see der welt|baikalsee", "Der Baikalsee in Sibirien ist mit über 1.600 m der tiefste See der Welt."],
+    ["welche ozeane gibt es|ozeane", "Die 5 Ozeane: Pazifischer, Atlantischer, Indischer, Südlicher (Antarktischer) und Arktischer Ozean."],
+    ["himmelsrichtungen", "Die vier Himmelsrichtungen: Norden, Osten, Süden, Westen – dazwischen Nordosten, Südosten, Südwesten, Nordwesten."],
+    ["zeitzonen|wie viele zeitzonen gibt es", "Die Erde ist in 24 Zeitzonen eingeteilt; die Schweiz liegt in der Mitteleuropäischen Zeit (MEZ, im Sommer MESZ)."],
+    ["wie viele bundesländer hat deutschland", "Deutschland hat 16 Bundesländer."],
+    ["wie viele bundesländer hat österreich", "Österreich hat 9 Bundesländer."],
+    ["wie viele staaten haben die usa|wie viele us staaten", "Die USA bestehen aus 50 Bundesstaaten."],
+    // Kunst, Musik & Mythologie
+    ["griechische götter", "Wichtige griechische Götter: Zeus (Göttervater), Hera, Poseidon (Meer), Hades (Unterwelt), Athene (Weisheit), Apollon, Artemis, Ares, Aphrodite, Hermes."],
+    ["römische götter", "Römische Entsprechungen: Jupiter (Zeus), Juno (Hera), Neptun (Poseidon), Pluto (Hades), Minerva (Athene), Mars (Ares), Venus (Aphrodite), Merkur (Hermes)."],
+    ["sternzeichen|tierkreiszeichen", "Die 12 Sternzeichen: Widder, Stier, Zwillinge, Krebs, Löwe, Jungfrau, Waage, Skorpion, Schütze, Steinbock, Wassermann, Fische."],
+    ["brüder grimm|märchen der brüder grimm", "Die Brüder Grimm sammelten im 19. Jahrhundert Märchen wie Hänsel und Gretel, Rotkäppchen, Schneewittchen und Aschenputtel."],
+    ["wer hat harry potter geschrieben|harry potter", "Harry Potter wurde von der britischen Autorin J. K. Rowling geschrieben; der erste Band erschien 1997."],
+    ["wer hat heidi geschrieben|heidi", "Heidi wurde von der Schweizer Autorin Johanna Spyri geschrieben (1880/81)."],
+    ["instrumentenfamilien|welche instrumente gibt es", "Instrumentenfamilien: Streicher (Geige, Cello), Holzbläser (Flöte, Klarinette), Blechbläser (Trompete, Posaune), Schlagzeug, Tasteninstrumente (Klavier, Orgel) und Zupfinstrumente (Gitarre, Harfe)."],
+    ["tonleiter|wie viele noten gibt es", "Die C-Dur-Tonleiter hat 7 Töne: C, D, E, F, G, A, H (international B)."],
+    ["farben mischen|was ergibt rot und blau", "Rot + Blau = Violett, Rot + Gelb = Orange, Blau + Gelb = Grün, Weiß + Schwarz = Grau."],
+    ["alphorn|was ist ein alphorn", "Das Alphorn ist ein bis zu 3,5 m langes Holzblasinstrument aus den Schweizer Alpen."],
+    ["jodeln|was ist jodeln", "Jodeln ist eine Gesangsart ohne Text, bei der die Stimme rasch zwischen Brust- und Kopfstimme wechselt – typisch für die Alpen."],
+    // Sport & Körper
+    ["tennis zählweise|wie zählt man im tennis", "Im Tennis zählt man 15, 30, 40 und Spiel; bei 40:40 heißt es Einstand (Deuce). Für einen Satz braucht man meist 6 gewonnene Spiele."],
+    ["abseits|was ist abseits im fussball", "Abseits: Ein Angreifer steht beim Abspiel in der gegnerischen Hälfte näher an der Torlinie als der Ball und der vorletzte Gegenspieler."],
+    ["muskelkater|was ist muskelkater", "Muskelkater sind winzige Risse in den Muskelfasern nach ungewohnter Belastung; er klingt meist nach 2 bis 4 Tagen von selbst ab."],
+    ["maximalpuls|wie berechnet man den maximalpuls", "Faustformel für den Maximalpuls: 220 minus Lebensalter (nur ein grober Richtwert)."],
+    ["wie viele spieler im rugby", "Beim Rugby Union spielen pro Team 15 Spieler (Rugby League: 13)."],
+    ["basketball spielzeit|wie lange dauert ein basketballspiel", "Ein Basketballspiel besteht aus 4 Vierteln: 4 × 10 Minuten (FIBA) bzw. 4 × 12 Minuten (NBA)."],
+    // Geschichte
+    ["was war das mittelalter", "Das Mittelalter dauerte grob vom Ende des Römischen Reiches (um 500) bis zur Entdeckung Amerikas (1492)."],
+    ["was war die reformation", "Die Reformation war die religiöse Erneuerungsbewegung im 16. Jahrhundert, ausgelöst 1517 durch Martin Luthers Thesen; in der Schweiz wirkten u. a. Zwingli (Zürich) und Calvin (Genf)."],
+    ["was war die industrielle revolution", "Die Industrielle Revolution (ab etwa 1760) brachte Maschinen, Dampfkraft und Fabriken und veränderte Arbeit und Leben grundlegend."],
+    ["was war der kalte krieg", "Der Kalte Krieg (ca. 1947–1991) war die Spannung zwischen den USA und der Sowjetunion samt Verbündeten – ohne direkten großen Krieg zwischen ihnen."],
+    ["bundesverfassung 1848|wann wurde die schweiz ein bundesstaat", "Die moderne Schweiz entstand 1848 mit der ersten Bundesverfassung – seitdem ist sie ein Bundesstaat mit Bern als Bundesstadt."],
+    ["rütlischwur|was ist der rütlischwur", "Der Rütlischwur ist die Sage vom Bund der ersten drei Kantone (Uri, Schwyz, Unterwalden) auf dem Rütli – Teil der Schweizer Gründungsgeschichte."],
+    ["wer war karl der große|karl der große", "Karl der Große (um 747–814) war Frankenkönig und ab dem Jahr 800 Kaiser – er einte große Teile Europas."],
+    ["wann wurde die berliner mauer gebaut|bau der berliner mauer", "Die Berliner Mauer wurde ab dem 13. August 1961 gebaut."],
+    ["wie lange gab es die ddr|ddr", "Die DDR (Deutsche Demokratische Republik) bestand von 1949 bis 1990."],
+    ["wann wurde die schweiz mitglied der uno", "Die Schweiz trat der UNO erst am 10. September 2002 bei."]
+  ];
+  P.forEach(([ks, a]) => ks.split('|').forEach(k => { if (!(k in learnedKnowledge)) learnedKnowledge[k] = a; }));
+})();
+</script>
+
+<!-- WISSENSPAKET 4 (Erweitertes Allgemeinwissen, Weltraum, Erfindungen & Technik) -->
+<script>
+(function () {
+  const W4 = [
+    // Weltraum & Astronomie erweitert
+    ["sonnensystem|welche planeten gibt es", "Unser Sonnensystem hat 8 Planeten: Merkur, Venus, Erde, Mars, Jupiter, Saturn, Uranus und Neptun (Pluto gilt seit 2006 als Zwergplanet)."],
+    ["größter planet", "Jupiter ist der größte und massereichste Planet unseres Sonnensystems."],
+    ["planet mit ringen|saturn", "Saturn ist bekannt für sein spektakuläres Ringsystem aus Eis- und Gesteinstrümmern."],
+    ["wie heiß ist die sonne", "An der Oberfläche hat die Sonne etwa 5.500 °C, im Inneren sogar rund 15 Millionen Grad."],
+    ["hellster stern", "Sirius im Sternbild Großer Hund ist der hellste Stern am Nachthimmel der Erde."],
+    ["galaxie milchstraße|milchstraße", "Unsere Galaxie, die Milchstraße, ist eine Balkenspiralgalaxie mit über 100 Milliarden Sternen."],
+    ["nächster stern", "Der der Erde nächstgelegene Stern (nach der Sonne) ist Proxima Centauri in etwa 4,2 Lichtjahren Entfernung."],
+    ["hubble weltraumteleskop|hubble", "Das Hubble-Teleskop kreist seit 1990 um die Erde und liefert atemberaubende Aufnahmen aus dem Tiefen Raum."],
+    ["james webb teleskop|jwst", "Das James-Webb-Weltraumteleskop ist das leistungsfähigste Infrarot-Weltraumteleskop und blickt weiter ins All als je zuvor."],
+    // Berühmte Erfindungen & Erfinder
+    ["wer erfand das telefon|telefon", "Das Telefon wurde 1876 von Alexander Graham Bell patentiert (wobei es auch andere Pioniere gab)."],
+    ["wer erfand die glühbirne|glühbirne", "Thomas Alva Edison entwickelte die erste kommerziell erfolgreiche Glühlampe (1879)."],
+    ["wer erfand den buchdruck|johannes gutenberg", "Johannes Gutenberg erfand um 1440 den Buchdruck mit beweglichen Metalllettern."],
+    ["wer erfand das auto|erster benz", "Carl Benz baute 1886 das erste benzinbetriebene Automobil (Benz Patent-Motorwagen Nummer 1)."],
+    ["wer erfand das flugzeug|brüder wright", "Die Gebrüder Wright (Orville und Wilbur) unternahmen im Dezember 1903 den ersten gesteuerten Motorflug."],
+    ["wer erfand das penicillin|penicillin", "Alexander Fleming entdeckte 1928 das Antibiotikum Penicillin durch Zufall in einer Petrischale."],
+    // Geografie & Naturerzählungen
+    ["längster fluss der welt|nil|amazonas", "Der Nil in Afrika ist mit rund 6.650 km der längste Fluss der Welt (der Amazonas hat allerdings das größte Wasservolumen)."],
+    ["größter ozean", "Der Pazifische Ozean ist der größte und tiefste Ozean der Erde."],
+    ["höchster vulkan", "Der Ojos del Salado in den Anden (Chile/Argentinien) ist mit 6.893 m der höchste aktive Vulkan der Welt."],
+    ["tiefster graben", "Der Marianengraben im westlichen Pazifik erreicht im Challengertief knapp 11.000 Meter Tiefe."],
+    ["größter wald", "Die Taiga (der boreale Nadelwald in Nordasien, Europa und Amerika) ist das größte geschlossene Waldgebiet der Erde."],
+    // Datenwissenschaft & AI deep dive
+    ["was ist machine learning|maschinelles lernen", "Machine Learning ist ein Teilbereich der KI, bei dem Algorithmen aus Daten lernen, anstatt starr programmiert zu werden."],
+    ["was ist deep learning", "Deep Learning nutzt künstliche neuronale Netze mit vielen Schichten (Deep Neural Networks) für komplexe Aufgaben wie Bild- und Spracherkennung."],
+    ["was ist overfitting", "Overfitting (Überanpassung) passiert, wenn ein KI-Modell Lerndaten auswendig lernt, statt allgemeine Muster zu erkennen, und bei neuen Daten versagt."],
+    ["was ist open source", "Open Source bedeutet, dass der Quellcode einer Software frei einsehbar, nutzbar und veränderbar ist."],
+    // Musik & Kultur erweitert
+    ["wer war wolfgang amadeus mozart", "Mozart war ein genialer Komponist der Wiener Klassik und schuf Meisterwerke wie ‚Die Zauberflöte‘ und ‚Eine kleine Nachtmusik‘."],
+    ["wer war ludwig van beethoven", "Beethoven schuf trotz seiner Ertaubung weltberühmte Sinfonien wie die Fünfte und die Neunte (‚Ode an die Freude‘)."],
+    ["was ist ein konzert", "Ein Konzert ist eine Live-Darbietung von Musik vor Publikum."],
+    ["was ist eine oper", "Eine Oper ist ein dramatisches Bühnenwerk, bei dem die Handlung durch Gesang und Orchester erzählt wird."]
+  ];
+  W4.forEach(([ks, a]) => ks.split('|').forEach(k => { if (!(k in learnedKnowledge)) learnedKnowledge[k] = a; }));
+  if (typeof updateKnowledgeBadge === 'function') updateKnowledgeBadge();
+})();
+</script>
+
+<!-- NEU: WISSENSPAKET 5 (Chemie, Biologie & Medizin, Informatik & Web, Antike & Weltgeschichte, Geografie & Sehenswürdigkeiten, Physik & Alltag) -->
+<script>
+(function () {
+  const W5 = [
+    // Chemie & Elemente
+    ["was ist gold|chemisches symbol gold", "Gold (Symbol Au, Ordnungszahl 79) ist ein weiches, glänzendes Edelmetall, das nicht rostet und Strom hervorragend leitet."],
+    ["was ist silber|chemisches symbol silber", "Silber (Symbol Ag, Ordnungszahl 47) ist das Edelmetall mit der höchsten elektrischen und thermischen Leitfähigkeit."],
+    ["was ist eisen|chemisches symbol eisen", "Eisen (Symbol Fe, Ordnungszahl 26) ist eines der häufigsten Metalle der Erde und Hauptbestandteil von Stahl sowie des Erdkerns."],
+    ["was ist sauerstoff|chemisches symbol sauerstoff", "Sauerstoff (Symbol O, Ordnungszahl 8) ist ein lebenswichtiges Gas für die Atmung der meisten Lebewesen und macht etwa 21 % der Luft aus."],
+    ["was ist wasserstoff|chemisches symbol wasserstoff", "Wasserstoff (Symbol H, Ordnungszahl 1) ist das leichteste und häufigste chemische Element im gesamten Universum."],
+    ["was ist helium|chemisches symbol helium", "Helium (Symbol He, Ordnungszahl 2) ist ein sehr leichtes, nicht brennbares Edelgas – bekannt aus schwebenden Luftballons."],
+    ["was ist kohlenstoff|chemisches symbol kohlenstoff", "Kohlenstoff (Symbol C, Ordnungszahl 6) ist die Grundlage aller organischen Moleküle und bildet sowohl Graphit als auch Diamanten."],
+    ["was ist kochsalz|woraus besteht salz|nacl", "Kochsalz ist Natriumchlorid (NaCl) – eine Verbindung aus Natrium und Chlor."],
+    ["was ist der ph wert|ph wert", "Der pH-Wert misst, wie sauer oder basisch eine Lösung ist: 0–6 ist sauer (z. B. Zitrone), 7 ist neutral (reines Wasser), 8–14 ist basisch/alkalisch (z. B. Seife)."],
+    ["was ist ein molekül", "Ein Molekül entsteht, wenn sich zwei oder mehr Atome chemisch miteinander verbinden – wie H₂O (Wasser) oder O₂ (Sauerstoff)."],
+    ["was ist rost|wie entsteht rost", "Rost (Eisenoxid) entsteht, wenn Eisen in Gegenwart von Wasser oder Feuchtigkeit mit Sauerstoff reagiert."],
+    ["warum schmilzt eis bei salz|warum streut man salz im winter", "Salz senkt den Gefrierpunkt von Wasser, sodass Eis und Schnee schon bei Temperaturen unter 0 °C schmelzen."],
+    ["was ist ein diamant|woraus besteht ein diamant", "Ein Diamant besteht aus reinem Kohlenstoff, dessen Atome unter extremem Druck kristalisiert sind – er ist das härteste natürliche Material."],
+
+    // Biologie & Menschlicher Körper
+    ["was ist fotosynthese|wie funktioniert fotosynthese", "Bei der Fotosynthese wandeln Pflanzen mithilfe von Sonnenlicht aus Kohlendioxid (CO₂) und Wasser (H₂O) Traubenzucker (Energie) und Sauerstoff (O₂) um."],
+    ["was ist eine zelle", "Die Zelle ist der kleinste lebende Baustein aller Organismen – Menschen bestehen aus rund 30 bis 40 Billionen Zellen."],
+    ["was sind bakterien|unterschied bakterien und viren", "Bakterien sind winzige einzellige Lebewesen mit eigenem Stoffwechsel (gegen sie helfen Antibiotika). Viren sind keine eigenen Zellen und brauchen Wirtszellen zur Vermehrung."],
+    ["was ist das immunsystem", "Das Immunsystem ist das körpereigene Abwehrsystem gegen Krankheitserreger wie Bakterien, Viren und Pilze."],
+    ["was macht das herz|funktion des herzens", "Das Herz ist ein Hohlmuskel, der Blut durch den gesamten Körper pumpt und so alle Organe mit Sauerstoff und Nährstoffen versorgt."],
+    ["was macht die lunge|funktion der lunge", "Die Lunge nimmt beim Einatmen Sauerstoff aus der Luft ins Blut auf und gibt beim Ausatmen Kohlendioxid ab."],
+    ["was macht die leber|funktion der leber", "Die Leber ist das wichtigste Stoffwechselorgan: Sie entgiftet das Blut, speichert Nährstoffe und produziert Gallenflüssigkeit für die Verdauung."],
+    ["was machen die nieren|funktion der nieren", "Die Nieren filtern Abfallstoffe und überschüssiges Wasser aus dem Blut und bilden daraus den Urin."],
+    ["was ist das gehirn|wie viele nervenzellen hat das gehirn", "Das menschliche Gehirn steuert Denken, Fühlen, Bewegung und Körperfunktionen mithilfe von rund 86 Milliarden Nervenzellen (Neuronen)."],
+    ["was sind vitamine", "Vitamine sind lebenswichtige organische Verbindungen, die der Körper meist nicht selbst herstellen kann und über die Nahrung aufnehmen muss (z. B. Vitamin C, D, B12)."],
+    ["was ist vitamin d", "Vitamin D stärkt Knochen und Immunsystem – der Körper bildet es vor allem selbst, wenn Sonnenlicht auf die Haut trifft."],
+    ["was sind proteine|was ist eiweiss", "Proteine (Eiweiße) bestehen aus Aminosäuren und sind wichtige Baustoffe für Muskeln, Zellen, Enzyme und Hormone."],
+    ["was sind kohlenhydrate", "Kohlenhydrate (Zucker, Stärke) sind die wichtigsten schnellen Energielieferanten für Körper und Gehirn – enthalten z. B. in Brot, Reis, Kartoffeln und Obst."],
+    ["was ist evolution|charles darwin", "Evolution ist die allmähliche Veränderung von Lebewesen über Generationen durch Mutation und natürliche Selektion – beschrieben u. a. von Charles Darwin."],
+    ["wann sind dinosaurier ausgestorben|dinosaurier", "Die meisten Dinosaurier starben vor rund 66 Millionen Jahren aus, wahrscheinlich ausgelöst durch einen gewaltigen Asteroideneinschlag."],
+    ["größtes tier der welt|blauwal", "Der Blauwal ist mit bis zu 30 Metern Länge und rund 150 Tonnen Gewicht das größte bekannte Tier, das je auf der Erde gelebt hat."],
+    ["schnellstes landtier|gepard", "Der Gepard ist das schnellste Landtier der Erde und erreicht im Sprint über 100 km/h."],
+    ["was ist ein chamäleon|warum wechseln chamäleons die farbe", "Chamäleons wechseln ihre Farbe vor allem zur Kommunikation, Tarnung und Temperaturregulation mithilfe spezieller Pigmentzellen."],
+
+    // Informatik, Web & Netzwerke
+    ["was ist html", "HTML (Hypertext Markup Language) ist die Auszeichnungssprache, mit der die Struktur und Inhalte einer Webseite aufgebaut werden."],
+    ["was ist css", "CSS (Cascading Style Sheets) legt das Design einer Webseite fest – also Farben, Schriftarten, Abstände und Layout."],
+    ["was ist javascript", "JavaScript ist die Programmiersprache des Webs, die Webseiten interaktiv und dynamisch macht."],
+    ["was ist eine ip adresse|ip adresse", "Eine IP-Adresse ist eine eindeutige Zahlenkennung für ein Gerät in einem Netzwerk oder im Internet (z. B. 192.168.1.1 oder IPv6)."],
+    ["was ist dns", "DNS (Domain Name System) ist das ‚Telefonbuch des Internets‘: Es übersetzt Domainnamen wie google.com in IP-Adressen."],
+    ["was ist eine url", "Eine URL ist die vollständige Internetadresse einer Webseite oder Datei, z. B. https://www.beispiel.ch/seite."],
+    ["was ist ein cookie|cookies im browser", "Ein Cookie ist eine kleine Textdatei, die eine Webseite im Browser speichert – z. B. um deinen Login oder Warenkorb zu merken."],
+    ["was ist ein cache", "Ein Cache ist ein schneller Zwischenspeicher, der häufig genutzte Daten bereithält, damit Programme und Webseiten schneller laden."],
+    ["was ist eine firewall", "Eine Firewall überwacht den ein- und ausgehenden Netzwerkverkehr und blockiert unerlaubte oder gefährliche Verbindungen."],
+    ["was ist ein vpn", "Ein VPN (Virtual Private Network) baut eine verschlüsselte Verbindung auf und schützt deine Daten sowie deine IP-Adresse im Internet."],
+    ["was ist verschlüsselung|kryptografie", "Verschlüsselung wandelt lesbare Daten mithilfe eines Schlüssels in unleserlichen Geheimtext um, sodass nur Befugte sie wieder lesen können."],
+    ["was ist zwei faktor authentifizierung|2fa", "Bei der Zwei-Faktor-Authentifizierung (2FA) meldest du dich zusätzlich zum Passwort mit einem zweiten Nachweis an, z. B. einem Code auf dem Handy."],
+    ["was ist ein qr code", "Ein QR-Code (Quick Response) ist ein zweidimensionaler Barcode, der Texte, Links oder WLAN-Daten speichert und per Kamera gescannt wird."],
+    ["was ist bluetooth", "Bluetooth ist eine Funktechnik für kurze Distanzen (meist bis 10 Meter), z. B. für kabellose Kopfhörer, Lautsprecher oder Tastaturen."],
+    ["was ist usb", "USB (Universal Serial Bus) ist ein weit verbreiteter Standard zum Verbinden und Laden von Geräten sowie zur Datenübertragung."],
+    ["was ist cpu|was ist ein prozessor", "Die CPU (Central Processing Unit) ist der Hauptprozessor eines Computers – das ‚Gehirn‘, das Befehle ausführt und Berechnungen steuert."],
+    ["was ist ram|was ist arbeitsspeicher", "RAM (Arbeitsspeicher) ist der schnelle Kurzzeitspeicher eines Computers für gerade laufende Programme; beim Ausschalten wird er geleert."],
+    ["was ist ein bug|was ist debugging", "Ein Bug ist ein Fehler in einem Computerprogramm. Das Suchen und Beheben solcher Fehler nennt man Debugging."],
+    ["was ist ein compiler|was ist ein interpreter", "Ein Compiler übersetzt Programmcode vorab komplett in Maschinensprache; ein Interpreter führt den Code Zeile für Zeile direkt aus."],
+    ["was ist ein repository|git repo", "Ein Repository (Repo) ist ein Projektordner in einer Versionsverwaltung wie Git, der alle Dateien und die gesamte Änderungshistorie enthält."],
+
+    // Antike & Weltgeschichte
+    ["wer waren die römer|römisches reich", "Das Römische Reich war eine der mächtigsten Hochkulturen der Antike (753 v. Chr. bis 476 n. Chr. in Westrom) und prägte Recht, Sprache und Architektur Europas."],
+    ["wer war julius cäsar|julius caesar", "Gaius Julius Cäsar (100–44 v. Chr.) war ein berühmter römischer Feldherr und Staatsmann, der Gallien eroberte und im Senat ermordet wurde."],
+    ["wer war kleopatra", "Kleopatra VII. (69–30 v. Chr.) war die letzte Königin des ägyptischen Ptolemäerreichs und bekannt für ihre Bündnisse mit Cäsar und Marcus Antonius."],
+    ["wer baute die pyramiden|pyramiden von gizeh", "Die großen Pyramiden von Gizeh in Ägypten wurden vor über 4.500 Jahren als monumentale Grabmäler für Pharaonen (u. a. Cheops) errichtet."],
+    ["was waren hieroglyphen", "Hieroglyphen waren die Bilderschrift der alten Ägypter, die unter anderem in Tempeln und auf Papyrus verwendet wurde."],
+    ["wer war alexander der große", "Alexander der Große (356–323 v. Chr.) war König von Makedonien und schuf in wenigen Jahren ein Weltreich bis nach Indien."],
+    ["was war die renaissance", "Die Renaissance (14.–16. Jahrhundert) war eine Epoche der ‚Wiedergeburt‘ antiker Kunst und Wissenschaft, geprägt von Leonardo da Vinci und Michelangelo."],
+    ["wann landete der erste mensch auf dem mond|mondlandung", "Am 20. Juli 1969 betrat Neil Armstrong (Apollo 11) als erster Mensch den Mond – mit den berühmten Worten über den kleinen Schritt."],
+    ["wer war albert einstein|relativitätstheorie", "Albert Einstein (1879–1955) war einer der bedeutendsten Physiker aller Zeiten, berühmt für die Relativitätstheorie und die Formel E = m · c²."],
+    ["wer war isaac newton", "Isaac Newton (1643–1727) formulierte die Gesetze der klassischen Mechanik und der Gravitation."],
+    ["wer war marie curie", "Marie Curie (1867–1934) erforschte die Radioaktivität, entdeckte Polonium und Radium und erhielt als erste Person zwei Nobelpreise (Physik & Chemie)."],
+    ["wer war nikola tesla", "Nikola Tesla (1856–1943) war ein Erfinder und Elektroingenieur, der maßgeblich das Wechselstromsystem mitentwickelte."],
+    ["wer war galileo galilei", "Galileo Galilei (1564–1642) war ein italienischer Astronom und Physiker, der mit dem Fernrohr die Jupitermonde entdeckte und das heliozentrische Weltbild verteidigte."],
+    ["was war die seidenstraße", "Die Seidenstraße war ein altes Netz von Handelsrouten zwischen Ostasien (China) und dem Mittelmeerraum."],
+    ["wer waren die wikinger", "Die Wikinger waren seefahrende Krieger, Händler und Entdecker aus Skandinavien (ca. 800–1050 n. Chr.), die bis nach Nordamerika segelten."],
+
+    // Geografie, Bauwerke & Länderwissen
+    ["wie viele kontinente gibt es|kontinente", "Meist zählt man 7 Kontinente: Europa, Asien, Afrika, Nordamerika, Südamerika, Australien/Ozeanien und Antarktika."],
+    ["größter kontinent", "Asien ist sowohl nach Fläche als auch nach Einwohnerzahl der größte Kontinent der Erde."],
+    ["kleinster kontinent", "Australien (bzw. Ozeanien) ist der kleinste Kontinent der Erde."],
+    ["längstes gebirge der welt|anden", "Die Anden in Südamerika sind mit rund 7.000 km die längste Gebirgskette der Erde über dem Meeresspiegel."],
+    ["höchster berg der welt|mount everest", "Der Mount Everest im Himalaya ist mit 8.848,86 Metern der höchste Berg der Erde."],
+    ["wo steht der eiffelturm|eiffelturm", "Der Eiffelturm (330 m hoch) steht in Paris und wurde 1889 zur Weltausstellung errichtet."],
+    ["wo steht das kolosseum|kolosseum", "Das Kolosseum steht in Rom und ist das größte antike Amphitheater der Welt."],
+    ["wo steht die freiheitsstatue|freiheitsstatue", "Die Freiheitsstatue steht im Hafen von New York und war 1886 ein Geschenk Frankreichs an die USA."],
+    ["chinesische mauer|wie lang ist die chinesische mauer", "Die Chinesische Mauer ist ein historisches Befestigungssystem in China mit einer Gesamtlänge von über 21.000 Kilometern."],
+    ["wo liegt machu picchu|machu picchu", "Machu Picchu ist eine gut erhaltene Inka-Stadt aus dem 15. Jahrhundert hoch in den Anden von Peru."],
+    ["was ist der äquator", "Der Äquator ist der gedachte Breitenkreis bei 0°, der die Erde in eine Nord- und eine Südhalbkugel teilt (Umfang ca. 40.075 km)."],
+    ["was ist der nordpol|was ist der südpol", "Der Nordpol liegt im vereisten Arktischen Ozean; der Südpol liegt auf dem eisbedeckten Kontinent Antarktika."],
+    ["was ist ein archipel", "Ein Archipel ist eine Inselgruppe oder ein Meer mit vielen Inseln (z. B. Indonesien oder die Malediven)."],
+    ["was ist ein delta|flussdelta", "Ein Flussdelta entsteht an der Mündung eines Flusses ins Meer, wenn sich der Fluss in viele Seitenarme verzweigt und Sedimente ablagert."],
+    ["was ist ein gletscher", "Ein Gletscher ist eine große Eismasse im Hochgebirge oder in Polarregionen, die sich durch ihr Eigengewicht langsam talwärts bewegt."],
+    ["wie viele kantone hat die schweiz|schweizer kantone aufzählen", "Die 26 Kantone der Schweiz: Zürich, Bern, Luzern, Uri, Schwyz, Obwalden, Nidwalden, Glarus, Zug, Freiburg, Solothurn, Basel-Stadt, Basel-Landschaft, Schaffhausen, Appenzell Ausserrhoden, Appenzell Innerrhoden, St. Gallen, Graubünden, Aargau, Thurgau, Tessin, Waadt, Wallis, Neuenburg, Genf und Jura."],
+
+    // Physik, Astronomie & Naturphänomene
+    ["lichtgeschwindigkeit|wie schnell ist licht", "Die Lichtgeschwindigkeit im Vakuum beträgt exakt 299.792.458 Meter pro Sekunde (rund 300.000 km/s)."],
+    ["schallgeschwindigkeit|wie schnell ist schall", "In trockener Luft bei 20 °C beträgt die Schallgeschwindigkeit rund 343 Meter pro Sekunde (etwa 1.235 km/h)."],
+    ["warum sieht man den blitz vor dem donner|blitz und donner", "Licht ist fast eine Million Mal schneller als Schall – darum sieht man den Blitz sofort und hört den Donner je 3 Sekunden pro Kilometer Entfernung später."],
+    ["was ist ein magnet|magnetismus", "Ein Magnet hat einen Nord- und einen Südpol: Gleiche Pole stoßen sich ab, ungleiche ziehen sich an."],
+    ["was ist energieerhaltung|energieerhaltungssatz", "Der Energieerhaltungssatz besagt, dass Energie weder erzeugt noch vernichtet, sondern nur von einer Form in eine andere umgewandelt werden kann."],
+    ["aggreggatzustände|aggregatzustände", "Die drei klassischen Aggregatzustände sind fest, flüssig und gasförmig (dazu kommt Plasma bei extrem hohen Temperaturen)."],
+    ["siedepunkt wasser|wann kocht wasser", "Auf Meereshöhe kocht reines Wasser bei 100 °C (in den Bergen wegen geringerem Luftdruck schon früher)."],
+    ["gefrierpunkt wasser|wann gefriert wasser", "Reines Wasser gefriert bei 0 °C zu Eis – dabei dehnt es sich aus, weshalb Eis auf Wasser schwimmt."],
+    ["was ist eine sonnenfinsternis", "Bei einer Sonnenfinsternis schiebt sich der Mond genau zwischen Sonne und Erde und wirft seinen Schatten auf die Erde."],
+    ["was ist eine mondfinsternis", "Bei einer Mondfinsternis steht die Erde genau zwischen Sonne und Mond, sodass der Mond in den Erdschatten eintaucht."],
+    ["warum hat der mond phasen|mondphasen", "Die Mondphasen (Neumond, zunehmender Mond, Vollmond, abnehmender Mond) entstehen, weil wir je nach Stellung zur Sonne unterschiedlich viel von der beleuchteten Mondhälfte sehen."],
+    ["was ist polarlicht|nordlicht", "Polarlichter (Aurora) entstehen, wenn geladene Teilchen des Sonnenwinds auf das Erdmagnetfeld treffen und Gase in der oberen Atmosphäre zum Leuchten bringen."],
+    ["was ist ein meteor|was ist eine sternschnuppe", "Eine Sternschnuppe (Meteor) ist ein winziges Staub- oder Gesteinskörnchen aus dem All, das in der Erdatmosphäre verglüht."],
+    ["unterschied asteroid und komet", "Asteroiden bestehen meist aus Gestein und Metall; Kometen enthalten viel Eis und Staub und bilden in Sonnennähe einen leuchtenden Schweif."],
+
+    // Alltag, Sprache, Logik & Praktisches
+    ["was ist ein schaltjahr|wann ist schaltjahr", "Ein Schaltjahr hat 366 Tage (29. Februar). Es findet alle 4 Jahre statt – außer bei vollen Jahrhunderten, die nicht durch 400 teilbar sind."],
+    ["römische zahlen", "Römische Zahlzeichen: I = 1, V = 5, X = 10, L = 50, C = 100, D = 500, M = 1000."],
+    ["morsealphabet|sos morsen", "Im Morsecode wird SOS als drei kurz, drei lang, drei kurz (· · ·  − − −  · · ·) gesendet."],
+    ["was ist ein palindrom", "Ein Palindrom ist ein Wort oder Satz, der vorwärts und rückwärts gleich gelesen wird, z. B. ‚Otto‘, ‚Anna‘ oder ‚Reliefpfeiler‘."],
+    ["was ist ein anagramm", "Ein Anagramm entsteht durch Umstellen der Buchstaben eines Wortes, z. B. aus ‚Ampel‘ wird ‚Palme‘."],
+    ["was ist ein synonym", "Ein Synonym ist ein Wort mit gleicher oder sehr ähnlicher Bedeutung, z. B. ‚schnell‘ und ‚rasch‘."],
+    ["was ist ein antonyme|was ist ein gegenteilwort", "Ein Antonym ist das Gegenteilwort zu einem Begriff, z. B. ‚heiß‘ und ‚kalt‘."],
+    ["was ist ein akronym", "Ein Akronym ist ein aus Anfangsbuchstaben gebildetes Kurzwort, z. B. ‚Laser‘, ‚Radar‘ oder ‚UNO‘."],
+    ["was ist nachhaltigkeit", "Nachhaltigkeit bedeutet, heute so zu leben und zu wirtschaften, dass auch zukünftige Generationen gute Lebensgrundlagen haben."],
+    ["was ist recycling", "Beim Recycling werden Abfallstoffe wie Glas, Papier, Aluminium oder PET gesammelt und zu neuen Produkten wiederverwertet."],
+    ["was ist klimawandel", "Als Klimawandel bezeichnet man langfristige Veränderungen von Temperaturen und Wetterlagen – heute vor allem die schnelle Erderwärmung durch Treibhausgase wie CO₂."],
+    ["was sind erneuerbare energien", "Erneuerbare Energien stammen aus unerschöpflichen Quellen wie Sonnenlicht (Photovoltaik), Windkraft, Wasserkraft, Erdwärme und Biomasse."],
+    ["was ist solaranlage|photovoltaik", "Photovoltaik wandelt Sonnenlicht mithilfe von Solarzellen direkt in elektrischen Strom um."],
+    ["was ist erste hilfe|stabile seitenlage", "Bei Bewusstlosigkeit mit normaler Atmung bringt man die Person in die stabile Seitenlage, hält die Atemwege frei und ruft sofort den Notruf (144 / 112)."],
+    ["wie spart man strom im alltag|strom sparen tipps", "Strom sparen klappt leicht durch LED-Lampen, Ausschalten statt Stand-by, Deckel beim Kochen auf den Topf und Stoßlüften statt gekippter Fenster."],
+    ["wie merkt man sich dinge besser|lerntipps", "Gute Lerntipps: Stoff in eigenen Worten erklären, Pausen machen (z. B. Pomodoro-Technik: 25 Min. lernen, 5 Min. Pause), regelmäßig wiederholen und ausreichend schlafen."]
+  ];
+  W5.forEach(([ks, a]) => ks.split('|').forEach(k => { if (!(k in learnedKnowledge)) learnedKnowledge[k] = a; }));
+  if (typeof updateKnowledgeBadge === 'function') updateKnowledgeBadge();
+})();
+</script>
+</body>
+</html>
